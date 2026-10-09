@@ -43,7 +43,7 @@ Spośród dostępnych wskaźników wybieramy trzy:
 |---|-----|----------|
 | 1 | **Współczynnik konwersji** | Bezpośrednio mierzy cel zarządu („zwiększyć liczbę zakupów"). Pozwala porównać jakość ruchu z różnych kanałów, urządzeń i krajów. |
 | 2 | **Średnia wartość koszyka (AOV)** | Pokazuje, *ile* warty jest zakup. Przychód = użytkownicy × konwersja × AOV, więc razem z konwersją wyjaśnia przychód. Dla porównań między kanałami używamy też RPU (konwersja × AOV w jednej liczbie). |
-| 3 | **Wskaźnik odrzuceń** | Wczesny sygnał jakości ruchu i dopasowania strony docelowej, mierzony już przy pierwszej wizycie. Najmocniej z danych zachowania wiąże się z zakupem (korelacja r = −0,81). Daje się bezpośrednio poprawiać przez optymalizację stron wejścia. |
+| 3 | **Wskaźnik odrzuceń** (metryka diagnostyczna, nie KPI) | Sam nie jest celem, ale to wczesny sygnał jakości ruchu i dopasowania strony docelowej, mierzony już przy pierwszej wizycie. Najmocniej z danych zachowania wiąże się z zakupem (korelacja r = −0,81). Daje się bezpośrednio poprawiać przez optymalizację stron wejścia. |
 
 **Dlaczego nie czas na stronie ani liczba stron?** W tych danych są niemal tym samym sygnałem co wskaźnik odrzuceń: korelacja z odrzuceniami wynosi −0,99 dla czasu i −0,97 dla liczby stron. Dodanie ich nic nie wnosi, więc wystarczy jeden reprezentant zaangażowania.
 
@@ -144,5 +144,6 @@ Spośród dostępnych wskaźników wybieramy trzy:
 ## Pliki
 
 - `dane.csv`: dane z karty warsztatu.
-- `warsztat_1.xlsx`: arkusz **Dane** z filtrami w nagłówkach (do pokazania filtrowania na żywo) oraz arkusz **Podsumowanie** z formułami `COUNTIFS`, `AVERAGEIFS` i `SUMIFS` dla każdego filtra i filtrów krzyżowych z typem użytkownika. Zmiana danych przelicza podsumowanie.
+- `warsztat_1_odpowiedzi.docx`: odpowiedzi na zadania ze strony 2 karty, oparte na pojęciach z wykładu (metryka a KPI, 5 wymiarów jakości danych, pułapki interpretacji, Customer Intelligence).
+- `warsztat_1.xlsx`: arkusz **Dane** z filtrami w nagłówkach (do pokazania filtrowania na żywo), arkusz **Jakość danych** z kontrolą 5 wymiarów jakości oraz arkusz **Podsumowanie** z formułami `COUNTIFS`, `AVERAGEIFS` i `SUMIFS` dla każdego filtra i filtrów krzyżowych z typem użytkownika. Zmiana danych przelicza podsumowanie.
 - `analiza.py`: skrypt odtwarzający wszystkie zestawienia i budujący plik Excel (`python3 analiza.py`).

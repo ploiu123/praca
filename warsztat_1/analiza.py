@@ -234,9 +234,67 @@ def arkusz_podsumowanie(wb, df):
     ws.freeze_panes = "B4"
 
 
+def arkusz_jakosc(wb, df):
+    """Kontrola 5 wymiarów jakości danych (wykład: Completeness, Accuracy,
+    Consistency, Uniqueness, Timeliness). Wynik = liczba problematycznych rekordów."""
+    ws = wb.create_sheet("Jakość danych")
+    n = len(df)
+    ws["A1"] = "Przygotowanie danych: kontrola 5 wymiarów jakości"
+    ws["A1"].font = Font(name=FONT, bold=True, size=13)
+    ws["A2"] = "Wynik = liczba rekordów z problemem (0 = OK). Formuły liczone z arkusza Dane."
+    ws["A2"].font = Font(name=FONT, italic=True, color="595959")
+    zrodla = '+'.join(f'COUNTIF({zakres("B", n)},"{v}")' for v in ("Google Ads", "Social Media", "Organic Search"))
+    urzadz = '+'.join(f'COUNTIF({zakres("C", n)},"{v}")' for v in ("Mobile", "Desktop", "Tablet"))
+    testy = [
+        ("Completeness (kompletność)", "Puste komórki w danych", f"=COUNTBLANK(Dane!$A$2:$J${n + 1})"),
+        ("Uniqueness (unikalność)", "Powtórzone ID użytkownika",
+         f"=SUMPRODUCT((COUNTIF({zakres('A', n)},{zakres('A', n)})>1)*1)"),
+        ("Accuracy (poprawność)", "Wskaźnik odrzuceń poza zakresem 0-100%",
+         f'=COUNTIFS({zakres("F", n)},"<0")+COUNTIFS({zakres("F", n)},">1")'),
+        ("Accuracy (poprawność)", "Czas na stronie <= 0 lub liczba stron < 1",
+         f'=COUNTIFS({zakres("G", n)},"<=0")+COUNTIFS({zakres("H", n)},"<1")'),
+        ("Consistency (spójność)", "Zakup = Tak, ale koszyk = 0 €",
+         f'=COUNTIFS({zakres("J", n)},"Tak",{zakres("I", n)},0)'),
+        ("Consistency (spójność)", "Zakup = Nie, ale koszyk > 0 €",
+         f'=COUNTIFS({zakres("J", n)},"Nie",{zakres("I", n)},">0")'),
+        ("Consistency (spójność)", "Źródło ruchu spoza słownika", f"={n}-({zrodla})"),
+        ("Consistency (spójność)", "Urządzenie spoza słownika", f"={n}-({urzadz})"),
+    ]
+    naglowki = ["Wymiar jakości", "Test", "Wynik", "Ocena"]
+    for c, t in enumerate(naglowki, 1):
+        cell = ws.cell(row=4, column=c, value=t)
+        cell.font = Font(name=FONT, bold=True, color="FFFFFF")
+        cell.fill = NAGLOWEK
+        cell.border = RAMKA
+    r = 5
+    for wymiar, test, formula in testy:
+        ws.cell(row=r, column=1, value=wymiar)
+        ws.cell(row=r, column=2, value=test)
+        ws.cell(row=r, column=3, value=formula)
+        ws.cell(row=r, column=4, value=f'=IF(C{r}=0,"OK","Do sprawdzenia")')
+        for c in range(1, 5):
+            ws.cell(row=r, column=c).font = Font(name=FONT)
+            ws.cell(row=r, column=c).border = RAMKA
+        r += 1
+    uwagi = [
+        ("Timeliness (aktualność)", "Brak kolumny z datą wizyty",
+         "nie da się ocenić", "Brak danych też jest informacją: nie wiemy, z jakiego okresu są dane."),
+        ("Accuracy (poprawność)", "Definicja wskaźnika odrzuceń",
+         "do doprecyzowania", "Odrzucenia podane per użytkownik (w GA4 to metryka sesji)."),
+    ]
+    for wymiar, test, wynik, ocena in uwagi:
+        for c, v in enumerate((wymiar, test, wynik, ocena), 1):
+            ws.cell(row=r, column=c, value=v).font = Font(name=FONT)
+            ws.cell(row=r, column=c).border = RAMKA
+        r += 1
+    for c, w in zip("ABCD", (28, 42, 18, 62)):
+        ws.column_dimensions[c].width = w
+
+
 def zbuduj_xlsx(df):
     wb = Workbook()
     arkusz_dane(wb, df)
+    arkusz_jakosc(wb, df)
     arkusz_podsumowanie(wb, df)
     wb.save(XLSX)
     print(f"\nZapisano {XLSX.name}")
