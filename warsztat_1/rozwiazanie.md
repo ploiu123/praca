@@ -144,6 +144,6 @@ Spośród dostępnych wskaźników wybieramy trzy:
 ## Pliki
 
 - `dane.csv`: dane z karty warsztatu.
-- `warsztat_1_odpowiedzi.docx`: odpowiedzi na zadania ze strony 2 karty, oparte na pojęciach z wykładu (metryka a KPI, 5 wymiarów jakości danych, pułapki interpretacji, Customer Intelligence).
-- `warsztat_1.xlsx`: arkusz **Dane** z filtrami w nagłówkach (do pokazania filtrowania na żywo), arkusz **Jakość danych** z kontrolą 5 wymiarów jakości oraz arkusz **Podsumowanie** z formułami `COUNTIFS`, `AVERAGEIFS` i `SUMIFS` dla każdego filtra i filtrów krzyżowych z typem użytkownika. Zmiana danych przelicza podsumowanie.
+- `warsztat_1_odpowiedzi.docx`: krótkie odpowiedzi na całe ćwiczenie (strona 1 i 2) z tabelami.
+- `warsztat_1.xlsx`: arkusz **Dane** z filtrami w nagłówkach oraz arkusz **Wyniki** z tabelami do zadań 1–4 liczonymi formułami `COUNTIF(S)` i `AVERAGEIF(S)`.
 - `analiza.py`: skrypt odtwarzający wszystkie zestawienia i budujący plik Excel (`python3 analiza.py`).

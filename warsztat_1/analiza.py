@@ -1,7 +1,7 @@
 """Warsztat 1 - filtrowanie danych sklepu internetowego.
 
-Wczytuje dane.csv, wypisuje zestawienia dla każdego filtra z zadania
-i buduje skoroszyt warsztat_1.xlsx (arkusz z filtrami + podsumowania na formułach).
+Wczytuje dane.csv, wypisuje zestawienia i buduje warsztat_1.xlsx
+(arkusz Dane z filtrami + arkusz Wyniki z tabelami na formułach).
 
 Uruchomienie:  python3 analiza.py
 """
@@ -9,299 +9,161 @@ from pathlib import Path
 
 import pandas as pd
 from openpyxl import Workbook
-from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
-from openpyxl.utils import get_column_letter
-from openpyxl.worksheet.table import Table, TableStyleInfo
+from openpyxl.styles import Alignment, Border, Font, Side
 
 KATALOG = Path(__file__).resolve().parent
 DANE = KATALOG / "dane.csv"
 XLSX = KATALOG / "warsztat_1.xlsx"
 
-FILTRY = [
-    ("zrodlo_ruchu", "Źródło ruchu"),
-    ("urzadzenie", "Urządzenie"),
-    ("kraj", "Kraj"),
-    ("typ_uzytkownika", "Nowy / Powracający"),
+NAGLOWKI_DANYCH = [
+    "Użytkownik", "Źródło ruchu", "Urządzenie", "Kraj", "Nowy/Powracający",
+    "Wskaźnik odrzuceń (%)", "Średni czas na stronie (min)", "Liczba przeglądanych stron",
+    "Wartość koszyka (€)", "Czy dokonano zakupu?",
 ]
+KOLUMNY = {"zrodlo_ruchu": "B", "urzadzenie": "C", "kraj": "D", "typ_uzytkownika": "E"}
 
-
-def zestawienie(df, grupy):
-    t = df.groupby(grupy).agg(
-        uzytkownicy=("zakup", "size"),
-        zakupy=("kupil", "sum"),
-        sr_odrzucen_proc=("wskaznik_odrzucen_proc", "mean"),
-        sr_czas_min=("sredni_czas_min", "mean"),
-        sr_stron=("liczba_stron", "mean"),
-        przychod_eur=("wartosc_koszyka_eur", "sum"),
-    )
-    t["konwersja_proc"] = t.zakupy / t.uzytkownicy * 100
-    t["sr_koszyk_eur"] = t.przychod_eur / t.zakupy.where(t.zakupy > 0)
-    t["przychod_na_uzytk_eur"] = t.przychod_eur / t.uzytkownicy
-    return t.round(2)
+CIENKA = Side(style="thin", color="000000")
+RAMKA = Border(left=CIENKA, right=CIENKA, top=CIENKA, bottom=CIENKA)
+EURO = '#,##0.00 "€"'
 
 
 def wypisz(df):
-    pd.set_option("display.width", 200)
-    for kol, nazwa in FILTRY:
-        print(f"\n=== {nazwa} ===")
-        print(zestawienie(df, kol).to_string())
-    for kol, nazwa in FILTRY[:3]:
-        print(f"\n=== {nazwa} x Nowy/Powracający ===")
-        print(zestawienie(df, [kol, "typ_uzytkownika"]).to_string())
-    print("\n=== Korelacja wskaźników z zakupem ===")
-    print(df[["wskaznik_odrzucen_proc", "sredni_czas_min", "liczba_stron",
-              "wartosc_koszyka_eur", "kupil"]].corr().round(2).to_string())
-
-
-# ---------------------------------------------------------------- Excel
-
-FONT = "Arial"
-NAGLOWEK = PatternFill("solid", fgColor="1F4E78")
-SEKCJA = PatternFill("solid", fgColor="DDEBF7")
-CIENKA = Side(style="thin", color="BFBFBF")
-RAMKA = Border(left=CIENKA, right=CIENKA, top=CIENKA, bottom=CIENKA)
-
-KOLUMNY_DANYCH = [
-    ("Użytkownik", "uzytkownik", "0"),
-    ("Źródło ruchu", "zrodlo_ruchu", None),
-    ("Urządzenie", "urzadzenie", None),
-    ("Kraj", "kraj", None),
-    ("Nowy/Powracający", "typ_uzytkownika", None),
-    ("Wskaźnik odrzuceń", "wskaznik_odrzucen_proc", "0%"),
-    ("Średni czas na stronie (min)", "sredni_czas_min", "0.0"),
-    ("Liczba przeglądanych stron", "liczba_stron", "0"),
-    ("Wartość koszyka (€)", "wartosc_koszyka_eur", "#,##0 €"),
-    ("Czy dokonano zakupu?", "zakup", None),
-]
+    df = df.assign(kupil=(df.zakup == "Tak").astype(int))
+    for kol in KOLUMNY:
+        t = df.groupby(kol).agg(
+            uzytkownicy=("kupil", "size"), zakupy=("kupil", "sum"),
+            odrzucenia=("wskaznik_odrzucen_proc", "mean"), czas=("sredni_czas_min", "mean"))
+        t["konwersja"] = t.zakupy / t.uzytkownicy * 100
+        t["sredni_koszyk"] = df[df.kupil == 1].groupby(kol).wartosc_koszyka_eur.mean()
+        print(t.round(2).to_string(), "\n")
 
 
 def zakres(litera, n):
-    return f"Dane!${litera}$2:${litera}${n + 1}"
+    return f"Dane!${litera}${2}:${litera}${n + 1}"
 
 
 def arkusz_dane(wb, df):
     ws = wb.active
     ws.title = "Dane"
-    for c, (nagl, _, _) in enumerate(KOLUMNY_DANYCH, 1):
-        ws.cell(row=1, column=c, value=nagl)
-    for r, wiersz in enumerate(df.itertuples(index=False), 2):
-        for c, (_, kol, fmt) in enumerate(KOLUMNY_DANYCH, 1):
-            v = getattr(wiersz, kol)
-            if kol == "wskaznik_odrzucen_proc":
-                v = v / 100  # procent przechowywany jako ułamek
-            cell = ws.cell(row=r, column=c, value=v.item() if hasattr(v, "item") else v)
-            cell.font = Font(name=FONT, color="0000FF")  # dane wejściowe
+    ws.append(NAGLOWKI_DANYCH)
+    for wiersz in df.itertuples(index=False):
+        ws.append([v.item() if hasattr(v, "item") else v for v in wiersz])
+    for cell in ws[1]:
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(wrap_text=True, vertical="center")
+    for wiersz in ws.iter_rows(min_row=1, max_row=len(df) + 1, max_col=len(NAGLOWKI_DANYCH)):
+        for cell in wiersz:
+            cell.border = RAMKA
+    for wiersz in ws.iter_rows(min_row=2, min_col=9, max_col=9):
+        wiersz[0].number_format = EURO
+    for litera, szer in zip("ABCDEFGHIJ", (11, 15, 12, 16, 17, 12, 13, 13, 12, 11)):
+        ws.column_dimensions[litera].width = szer
+    ws.row_dimensions[1].height = 45
+    ws.auto_filter.ref = f"A1:J{len(df) + 1}"
+    ws.freeze_panes = "A2"
+
+
+def tabela(ws, r, tytul, naglowki, wiersze):
+    ws.cell(row=r, column=1, value=tytul).font = Font(bold=True, size=12)
+    r += 1
+    for c, n in enumerate(naglowki, 1):
+        cell = ws.cell(row=r, column=c, value=n)
+        cell.font = Font(bold=True)
+        cell.alignment = Alignment(wrap_text=True, horizontal="center", vertical="center")
+        cell.border = RAMKA
+    ws.row_dimensions[r].height = 32
+    for wiersz in wiersze:
+        r += 1
+        for c, (v, fmt) in enumerate(wiersz(r), 1):
+            cell = ws.cell(row=r, column=c, value=v)
+            cell.border = RAMKA
             if fmt:
                 cell.number_format = fmt
-    ost = get_column_letter(len(KOLUMNY_DANYCH))
-    tabela = Table(displayName="TabelaDane", ref=f"A1:{ost}{len(df) + 1}")
-    tabela.tableStyleInfo = TableStyleInfo(name="TableStyleMedium2", showRowStripes=True)
-    ws.add_table(tabela)
-    for c in range(1, len(KOLUMNY_DANYCH) + 1):
-        ws.cell(row=1, column=c).font = Font(name=FONT, bold=True, color="FFFFFF")
-        ws.cell(row=1, column=c).alignment = Alignment(wrap_text=True, vertical="center")
-        ws.column_dimensions[get_column_letter(c)].width = 16
-    ws.row_dimensions[1].height = 45
-    ws.freeze_panes = "A2"
-    uw = len(df) + 3
-    ws.cell(row=uw, column=1, value=(
-        "Źródło: dane przykładowe z karty warsztatu (Ćwiczenie I). "
-        "Filtry: strzałki w nagłówkach tabeli. Niebieski tekst = dane wejściowe.")
-    ).font = Font(name=FONT, italic=True, color="595959")
+    return r + 3
 
 
-METRYKI = [
-    ("Użytkownicy", "0"),
-    ("Zakupy", "0"),
-    ("Współczynnik konwersji", "0.0%"),
-    ("Śr. wskaźnik odrzuceń", "0.0%"),
-    ("Śr. czas na stronie (min)", "0.00"),
-    ("Śr. liczba stron", "0.0"),
-    ("Przychód (€)", "#,##0 €"),
-    ("Śr. wartość koszyka - kupujący (€)", "#,##0.00 €"),
-    ("Przychód na użytkownika (€)", "#,##0.00 €"),
-    ("Udział w przychodzie", "0.0%"),
-]
+def arkusz_wyniki(wb, n):
+    ws = wb.create_sheet("Wyniki")
+    zak = zakres("J", n)
 
+    def podstawowe(kol, wartosc, z_czasem):
+        k = zakres(kol, n)
 
-def formuly(n, kryteria, r):
-    """kryteria: lista (litera_kolumny_w_Dane, adres_komorki_z_wartoscia)."""
-    warunki = ",".join(f"{zakres(k, n)},{adr}" for k, adr in kryteria)
-    zak = f"{zakres('J', n)},\"Tak\""
-    return [
-        f"=COUNTIFS({warunki})",
-        f"=COUNTIFS({warunki},{zak})",
-        f"=IFERROR(C{r}/B{r},0)" if len(kryteria) == 1 else f"=IFERROR(D{r}/C{r},0)",
-        f"=AVERAGEIFS({zakres('F', n)},{warunki})",
-        f"=AVERAGEIFS({zakres('G', n)},{warunki})",
-        f"=AVERAGEIFS({zakres('H', n)},{warunki})",
-        f"=SUMIFS({zakres('I', n)},{warunki})",
-    ]
+        def wiersz(r):
+            w = [
+                (wartosc, None),
+                (f"=COUNTIF({k},A{r})", None),
+                (f'=COUNTIFS({k},A{r},{zak},"Tak")', None),
+                (f"=C{r}/B{r}", "0.0%"),
+                (f'=AVERAGEIFS({zakres("I", n)},{k},A{r},{zak},"Tak")', EURO),
+                (f'=ROUND(AVERAGEIF({k},A{r},{zakres("F", n)}),1)', None),
+            ]
+            if z_czasem:
+                w.append((f'=ROUND(AVERAGEIF({k},A{r},{zakres("G", n)}),1)', None))
+            return w
+        return wiersz
 
+    glowne = ["Użytkownicy", "Zakupy", "Konwersja", "Średni koszyk", "Odrzucenia (%)"]
+    r = 1
+    r = tabela(ws, r, "1. Źródło ruchu", ["Źródło ruchu"] + glowne + ["Średni czas (min)"],
+               [podstawowe("B", v, True) for v in ("Google Ads", "Social Media", "Organic Search")])
+    r = tabela(ws, r, "2. Urządzenia", ["Urządzenie"] + glowne,
+               [podstawowe("C", v, False) for v in ("Desktop", "Mobile", "Tablet")])
+    r = tabela(ws, r, "3. Kraje", ["Kraj"] + glowne,
+               [podstawowe("D", v, False) for v in ("Niemcy", "Polska", "Wielka Brytania")])
 
-def arkusz_podsumowanie(wb, df):
-    ws = wb.create_sheet("Podsumowanie")
-    n = len(df)
-    ws["A1"] = "Podsumowanie wskaźników wg filtrów (formuły liczone z arkusza Dane)"
-    ws["A1"].font = Font(name=FONT, bold=True, size=13)
-    ws["A2"] = ("Konwersja = zakupy / użytkownicy; śr. wartość koszyka liczona tylko "
-                "dla kupujących; przychód na użytkownika = przychód / wszyscy użytkownicy.")
-    ws["A2"].font = Font(name=FONT, italic=True, color="595959")
-    ws.column_dimensions["A"].width = 22
-    ws.column_dimensions["B"].width = 18
+    def kraj_typ(kraj):
+        d, e = zakres("D", n), zakres("E", n)
 
-    def naglowek(r, etykiety):
-        for c, tekst in enumerate(etykiety, 1):
-            cell = ws.cell(row=r, column=c, value=tekst)
-            cell.font = Font(name=FONT, bold=True, color="FFFFFF")
-            cell.fill = NAGLOWEK
-            cell.alignment = Alignment(wrap_text=True, vertical="center")
-            cell.border = RAMKA
-        ws.row_dimensions[r].height = 42
+        def wiersz(r):
+            return [
+                (kraj, None),
+                (f'=COUNTIFS({d},A{r},{e},"Nowy")', None),
+                (f'=COUNTIFS({d},A{r},{e},"Nowy",{zak},"Tak")', None),
+                (f'=COUNTIFS({d},A{r},{e},"Powracający")', None),
+                (f'=COUNTIFS({d},A{r},{e},"Powracający",{zak},"Tak")', None),
+                (f'=ROUND(AVERAGEIFS({zakres("F", n)},{d},A{r},{e},"Nowy"),1)', None),
+                (f'=ROUND(AVERAGEIFS({zakres("F", n)},{d},A{r},{e},"Powracający"),1)', None),
+            ]
+        return wiersz
 
-    def formatuj(r, pierwsza_metryka, ile=len(METRYKI)):
-        for c in range(1, pierwsza_metryka + ile):
-            cell = ws.cell(row=r, column=c)
-            cell.font = Font(name=FONT)
-            cell.border = RAMKA
-            if c >= pierwsza_metryka:
-                cell.number_format = METRYKI[c - pierwsza_metryka][1]
+    r = tabela(ws, r, "3. Kraje – nowi i powracający",
+               ["Kraj", "Nowi", "Zakupy nowych", "Powracający", "Zakupy powracających",
+                "Odrzucenia nowych (%)", "Odrzucenia powracających (%)"],
+               [kraj_typ(v) for v in ("Niemcy", "Polska", "Wielka Brytania")])
 
-    r = 4
-    litery = {"zrodlo_ruchu": "B", "urzadzenie": "C", "kraj": "D", "typ_uzytkownika": "E"}
+    def typ(wartosc):
+        k = zakres("E", n)
 
-    # Pojedyncze filtry
-    for kol, nazwa in FILTRY:
-        ws.cell(row=r, column=1, value=f"Filtr: {nazwa}").font = Font(name=FONT, bold=True)
-        ws.cell(row=r, column=1).fill = SEKCJA
-        r += 1
-        naglowek(r, [nazwa] + [m for m, _ in METRYKI])
-        r += 1
-        pierwszy = r
-        wartosci = list(dict.fromkeys(df[kol]))
-        for v in wartosci:
-            ws.cell(row=r, column=1, value=v)
-            for c, f in enumerate(formuly(n, [(litery[kol], f"$A{r}")], r), 2):
-                ws.cell(row=r, column=c, value=f)
-            ws.cell(row=r, column=9, value=f"=IFERROR(H{r}/C{r},\"brak zakupów\")")
-            ws.cell(row=r, column=10, value=f"=IFERROR(H{r}/B{r},0)")
-            ws.cell(row=r, column=11, value=f"=IFERROR(H{r}/SUM($H${pierwszy}:$H${pierwszy + len(wartosci) - 1}),0)")
-            formatuj(r, 2)
-            r += 1
-        # Wiersz "Razem"
-        ws.cell(row=r, column=1, value="Razem")
-        ws.cell(row=r, column=2, value=f"=SUM(B{pierwszy}:B{r - 1})")
-        ws.cell(row=r, column=3, value=f"=SUM(C{pierwszy}:C{r - 1})")
-        ws.cell(row=r, column=4, value=f"=IFERROR(C{r}/B{r},0)")
-        ws.cell(row=r, column=5, value=f"=AVERAGE({zakres('F', n)})")
-        ws.cell(row=r, column=6, value=f"=AVERAGE({zakres('G', n)})")
-        ws.cell(row=r, column=7, value=f"=AVERAGE({zakres('H', n)})")
-        ws.cell(row=r, column=8, value=f"=SUM(H{pierwszy}:H{r - 1})")
-        ws.cell(row=r, column=9, value=f"=IFERROR(H{r}/C{r},0)")
-        ws.cell(row=r, column=10, value=f"=IFERROR(H{r}/B{r},0)")
-        ws.cell(row=r, column=11, value=f"=IFERROR(H{r}/H{r},0)")
-        formatuj(r, 2)
-        for c in range(1, 12):
-            ws.cell(row=r, column=c).font = Font(name=FONT, bold=True)
-        r += 3
+        def wiersz(r):
+            return [
+                (wartosc, None),
+                (f"=COUNTIF({k},A{r})", None),
+                (f'=COUNTIFS({k},A{r},{zak},"Tak")', None),
+                (f"=C{r}/B{r}", "0.0%"),
+                (f'=ROUND(AVERAGEIF({k},A{r},{zakres("G", n)}),1)', None),
+                (f'=ROUND(AVERAGEIF({k},A{r},{zakres("F", n)}),1)', None),
+            ]
+        return wiersz
 
-    # Filtry krzyżowe: wymiar x Nowy/Powracający
-    for kol, nazwa in FILTRY[:3]:
-        ws.cell(row=r, column=1, value=f"Filtr: {nazwa} × Nowy/Powracający").font = Font(name=FONT, bold=True)
-        ws.cell(row=r, column=1).fill = SEKCJA
-        r += 1
-        naglowek(r, [nazwa, "Nowy/Powracający"] + [m for m, _ in METRYKI[:-1]])
-        r += 1
-        for v in dict.fromkeys(df[kol]):
-            for typ in ("Nowy", "Powracający"):
-                ws.cell(row=r, column=1, value=v)
-                ws.cell(row=r, column=2, value=typ)
-                kryt = [(litery[kol], f"$A{r}"), ("E", f"$B{r}")]
-                f = formuly(n, kryt, r)
-                ws.cell(row=r, column=3, value=f[0])
-                ws.cell(row=r, column=4, value=f[1])
-                ws.cell(row=r, column=5, value=f[2])
-                for c, fr in zip((6, 7, 8, 9), f[3:]):
-                    ws.cell(row=r, column=c, value=f"=IFERROR({fr[1:]},\"-\")")
-                ws.cell(row=r, column=10, value=f"=IFERROR(I{r}/D{r},\"brak zakupów\")")
-                ws.cell(row=r, column=11, value=f"=IFERROR(I{r}/C{r},\"-\")")
-                formatuj(r, 3, len(METRYKI) - 1)
-                r += 1
-        r += 2
+    tabela(ws, r, "4. Nowi i powracający użytkownicy",
+           ["Typ użytkownika", "Użytkownicy", "Zakupy", "Konwersja", "Średni czas (min)", "Odrzucenia (%)"],
+           [typ(v) for v in ("Nowy", "Powracający")])
 
-    for c in range(3, 13):
-        ws.column_dimensions[get_column_letter(c)].width = 15
-    ws.freeze_panes = "B4"
-
-
-def arkusz_jakosc(wb, df):
-    """Kontrola 5 wymiarów jakości danych (wykład: Completeness, Accuracy,
-    Consistency, Uniqueness, Timeliness). Wynik = liczba problematycznych rekordów."""
-    ws = wb.create_sheet("Jakość danych")
-    n = len(df)
-    ws["A1"] = "Przygotowanie danych: kontrola 5 wymiarów jakości"
-    ws["A1"].font = Font(name=FONT, bold=True, size=13)
-    ws["A2"] = "Wynik = liczba rekordów z problemem (0 = OK). Formuły liczone z arkusza Dane."
-    ws["A2"].font = Font(name=FONT, italic=True, color="595959")
-    zrodla = '+'.join(f'COUNTIF({zakres("B", n)},"{v}")' for v in ("Google Ads", "Social Media", "Organic Search"))
-    urzadz = '+'.join(f'COUNTIF({zakres("C", n)},"{v}")' for v in ("Mobile", "Desktop", "Tablet"))
-    testy = [
-        ("Completeness (kompletność)", "Puste komórki w danych", f"=COUNTBLANK(Dane!$A$2:$J${n + 1})"),
-        ("Uniqueness (unikalność)", "Powtórzone ID użytkownika",
-         f"=SUMPRODUCT((COUNTIF({zakres('A', n)},{zakres('A', n)})>1)*1)"),
-        ("Accuracy (poprawność)", "Wskaźnik odrzuceń poza zakresem 0-100%",
-         f'=COUNTIFS({zakres("F", n)},"<0")+COUNTIFS({zakres("F", n)},">1")'),
-        ("Accuracy (poprawność)", "Czas na stronie <= 0 lub liczba stron < 1",
-         f'=COUNTIFS({zakres("G", n)},"<=0")+COUNTIFS({zakres("H", n)},"<1")'),
-        ("Consistency (spójność)", "Zakup = Tak, ale koszyk = 0 €",
-         f'=COUNTIFS({zakres("J", n)},"Tak",{zakres("I", n)},0)'),
-        ("Consistency (spójność)", "Zakup = Nie, ale koszyk > 0 €",
-         f'=COUNTIFS({zakres("J", n)},"Nie",{zakres("I", n)},">0")'),
-        ("Consistency (spójność)", "Źródło ruchu spoza słownika", f"={n}-({zrodla})"),
-        ("Consistency (spójność)", "Urządzenie spoza słownika", f"={n}-({urzadz})"),
-    ]
-    naglowki = ["Wymiar jakości", "Test", "Wynik", "Ocena"]
-    for c, t in enumerate(naglowki, 1):
-        cell = ws.cell(row=4, column=c, value=t)
-        cell.font = Font(name=FONT, bold=True, color="FFFFFF")
-        cell.fill = NAGLOWEK
-        cell.border = RAMKA
-    r = 5
-    for wymiar, test, formula in testy:
-        ws.cell(row=r, column=1, value=wymiar)
-        ws.cell(row=r, column=2, value=test)
-        ws.cell(row=r, column=3, value=formula)
-        ws.cell(row=r, column=4, value=f'=IF(C{r}=0,"OK","Do sprawdzenia")')
-        for c in range(1, 5):
-            ws.cell(row=r, column=c).font = Font(name=FONT)
-            ws.cell(row=r, column=c).border = RAMKA
-        r += 1
-    uwagi = [
-        ("Timeliness (aktualność)", "Brak kolumny z datą wizyty",
-         "nie da się ocenić", "Brak danych też jest informacją: nie wiemy, z jakiego okresu są dane."),
-        ("Accuracy (poprawność)", "Definicja wskaźnika odrzuceń",
-         "do doprecyzowania", "Odrzucenia podane per użytkownik (w GA4 to metryka sesji)."),
-    ]
-    for wymiar, test, wynik, ocena in uwagi:
-        for c, v in enumerate((wymiar, test, wynik, ocena), 1):
-            ws.cell(row=r, column=c, value=v).font = Font(name=FONT)
-            ws.cell(row=r, column=c).border = RAMKA
-        r += 1
-    for c, w in zip("ABCD", (28, 42, 18, 62)):
-        ws.column_dimensions[c].width = w
+    ws.column_dimensions["A"].width = 18
+    for litera in "BCDEFG":
+        ws.column_dimensions[litera].width = 14
 
 
 def zbuduj_xlsx(df):
     wb = Workbook()
     arkusz_dane(wb, df)
-    arkusz_jakosc(wb, df)
-    arkusz_podsumowanie(wb, df)
+    arkusz_wyniki(wb, len(df))
     wb.save(XLSX)
-    print(f"\nZapisano {XLSX.name}")
+    print(f"Zapisano {XLSX.name}")
 
 
 if __name__ == "__main__":
     dane = pd.read_csv(DANE)
-    dane["kupil"] = (dane.zakup == "Tak").astype(int)
     wypisz(dane)
     zbuduj_xlsx(dane)
