@@ -21,19 +21,28 @@ WEZLY = {
     "kon": ("Działania\nkonkurencji", 0.50, 0.08),
 }
 
-# (od, do, wygięcie łuku)
+ZIELONY, CZERWONY, NIEBIESKI, SZARY = "#2E7D32", "#C62828", "#1565C0", "#7F7F7F"
+
+# (od, do, wygięcie łuku, kolor)
 KRAWEDZIE = [
-    ("sez", "pop", 0.0),
-    ("sez", "rab", 0.0),
-    ("sez", "rek", 0.0),
-    ("pop", "rek", 0.50),
-    ("pop", "spr", -0.30),
-    ("rab", "rek", 0.0),
-    ("rab", "spr", 0.0),
-    ("kon", "rek", 0.0),
-    ("kon", "spr", 0.0),
-    ("rek", "ruch", 0.0),
-    ("ruch", "spr", 0.0),
+    ("rek", "ruch", 0.0, ZIELONY),
+    ("ruch", "spr", 0.0, ZIELONY),
+    ("sez", "rek", 0.0, CZERWONY),
+    ("pop", "rek", 0.50, CZERWONY),
+    ("rab", "rek", 0.0, CZERWONY),
+    ("kon", "rek", 0.0, CZERWONY),
+    ("pop", "spr", -0.30, NIEBIESKI),
+    ("rab", "spr", 0.0, NIEBIESKI),
+    ("kon", "spr", 0.0, NIEBIESKI),
+    ("sez", "pop", 0.0, SZARY),
+    ("sez", "rab", 0.0, SZARY),
+]
+
+LEGENDA = [
+    (ZIELONY, "efekt reklamy (to chcemy zmierzyć)"),
+    (CZERWONY, "co wpływa na wydatki reklamowe"),
+    (NIEBIESKI, "co jeszcze wpływa na sprzedaż"),
+    (SZARY, "wpływ sezonu na popyt i rabaty"),
 ]
 
 fig, ax = plt.subplots(figsize=(8, 5.4), dpi=200)
@@ -58,7 +67,7 @@ def w_pudelku(p, b):
     return b[0] <= p[0] <= b[2] and b[1] <= p[1] <= b[3]
 
 
-for a, b, rad in KRAWEDZIE:
+for a, b, rad, kolor in KRAWEDZIE:
     p0 = np.array(WEZLY[a][1:]); p2 = np.array(WEZLY[b][1:])
     d = p2 - p0
     c = (p0 + p2) / 2 + rad * np.array([d[1], -d[0]])
@@ -70,7 +79,11 @@ for a, b, rad in KRAWEDZIE:
     q1 = (1 - t0) * (1 - t1) * p0 + ((1 - t0) * t1 + t0 * (1 - t1)) * c + t0 * t1 * p2
     sciezka = Path([q0, q1, q2], [Path.MOVETO, Path.CURVE3, Path.CURVE3])
     ax.add_patch(FancyArrowPatch(path=sciezka, arrowstyle="-|>", mutation_scale=16,
-                                 lw=1.2, color="black", zorder=2))
+                                 lw=2.0 if kolor == ZIELONY else 1.4, color=kolor, zorder=2))
+
+from matplotlib.lines import Line2D
+ax.legend([Line2D([0], [0], color=k, lw=2.5) for k, _ in LEGENDA], [o for _, o in LEGENDA],
+          loc="upper center", bbox_to_anchor=(0.5, 0.0), ncol=2, frameon=False, fontsize=11)
 
 fig.savefig(OUT, bbox_inches="tight", facecolor="white")
 print("Zapisano", OUT)
