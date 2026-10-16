@@ -21,7 +21,7 @@ WEZLY = {
     "kon": ("Działania\nkonkurencji", 0.50, 0.08),
 }
 
-ZIELONY, CZERWONY, NIEBIESKI, SZARY = "#2E7D32", "#C62828", "#1565C0", "#7F7F7F"
+ZIELONY, CZERWONY, NIEBIESKI = "#2E7D32", "#C62828", "#1565C0"
 
 # (od, do, wygięcie łuku, kolor)
 KRAWEDZIE = [
@@ -34,15 +34,14 @@ KRAWEDZIE = [
     ("pop", "spr", -0.30, NIEBIESKI),
     ("rab", "spr", 0.0, NIEBIESKI),
     ("kon", "spr", 0.0, NIEBIESKI),
-    ("sez", "pop", 0.0, SZARY),
-    ("sez", "rab", 0.0, SZARY),
+    ("sez", "pop", 0.0, NIEBIESKI),
+    ("sez", "rab", 0.0, NIEBIESKI),
 ]
 
 LEGENDA = [
     (ZIELONY, "ścieżka przyczynowa (przez mediator)"),
     (CZERWONY, "zmienna zakłócająca → przyczyna (reklama)"),
     (NIEBIESKI, "zmienna zakłócająca → skutek (sprzedaż)"),
-    (SZARY, "zależność między zmiennymi zakłócającymi"),
 ]
 
 fig, ax = plt.subplots(figsize=(8, 5.4), dpi=200)
@@ -83,7 +82,7 @@ for a, b, rad, kolor in KRAWEDZIE:
 
 from matplotlib.lines import Line2D
 ax.legend([Line2D([0], [0], color=k, lw=2.5) for k, _ in LEGENDA], [o for _, o in LEGENDA],
-          loc="upper center", bbox_to_anchor=(0.5, 0.0), ncol=2, frameon=False, fontsize=11)
+          loc="upper center", bbox_to_anchor=(0.5, 0.0), ncol=1, frameon=False, fontsize=11)
 
 fig.savefig(OUT, bbox_inches="tight", facecolor="white")
 print("Zapisano", OUT)
