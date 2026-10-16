@@ -39,10 +39,10 @@ KRAWEDZIE = [
 ]
 
 LEGENDA = [
-    (ZIELONY, "efekt reklamy (to chcemy zmierzyć)"),
-    (CZERWONY, "co wpływa na wydatki reklamowe"),
-    (NIEBIESKI, "co jeszcze wpływa na sprzedaż"),
-    (SZARY, "wpływ sezonu na popyt i rabaty"),
+    (ZIELONY, "ścieżka przyczynowa (przez mediator)"),
+    (CZERWONY, "zmienna zakłócająca → przyczyna (reklama)"),
+    (NIEBIESKI, "zmienna zakłócająca → skutek (sprzedaż)"),
+    (SZARY, "zależność między zmiennymi zakłócającymi"),
 ]
 
 fig, ax = plt.subplots(figsize=(8, 5.4), dpi=200)
