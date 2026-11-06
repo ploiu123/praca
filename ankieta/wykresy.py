@@ -16,6 +16,7 @@ WYK = KAT / "wykresy"
 WYK.mkdir(exist_ok=True)
 
 NIEBIESKI = "#2a78d6"
+POMARANCZ = "#eb6834"
 TEKST = "#0b0b0b"
 TEKST_2 = "#52514e"
 SIATKA = "#e1e0d9"
@@ -144,5 +145,76 @@ poziomy(ax, [e.replace("Na platformach typu Allegro czy Amazon", "Allegro, Amazo
              .replace("Na stronie producenta", "Strona producenta") for e in g.index],
         [int(v) for v in g.values], sortuj=True)
 zapisz(fig, "7_gdzie.png")
+
+# --- Porównanie grup: studenci (seria 1) i pracujący (seria 2) ---
+GRUPY = [("Nauka lub studia", "Studenci i uczniowie", NIEBIESKI), ("Praca na etacie", "Pracujący", POMARANCZ)]
+
+
+def grupowy(nazwa, etykiety, wartosci_dla, wysokosc):
+    """Poziome słupki dla dwóch grup; wartości jako % osób w grupie."""
+    fig, ax = plt.subplots(figsize=(6.4, wysokosc))
+    k = len(etykiety)
+    h = 0.34
+    for g, (klucz, opis, kolor) in enumerate(GRUPY):
+        d = df[df.zajecie == klucz]
+        n = len(d)
+        vals = wartosci_dla(d)
+        for i, v in enumerate(vals):
+            y = i + (g - 0.5) * (h + 0.04)
+            if v:
+                ax.barh(y, v / n, height=h, color=kolor, edgecolor="none")
+            ax.text(v / n + 0.015, y, f"{v / n:.0%} ({v} z {n})", va="center", fontsize=9.5, color=TEKST_2)
+    ax.set_xlim(0, 1.32)
+    ax.set_ylim(k - 0.4, -0.75)
+    ax.set_yticks(range(k))
+    ax.set_yticklabels(etykiety)
+    ax.set_xticks([])
+    for s_ in ("top", "right", "bottom"):
+        ax.spines[s_].set_visible(False)
+    ax.spines["left"].set_color(OS)
+    ax.tick_params(axis="y", length=0, pad=6)
+    uchwyty = [Rectangle((0, 0), 1, 1, fc=k_) for _, _, k_ in GRUPY]
+    ax.legend(uchwyty, [f"{o} ({(df.zajecie == kl).sum()} osób)" for kl, o, _ in GRUPY], ncol=2,
+              loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False, fontsize=10, handlelength=1.0)
+    zapisz(fig, nazwa)
+
+
+def wiele(kol, kolejnosc):
+    return lambda d: [int(d[kol].str.contains(k, regex=False).sum()) for k in kolejnosc]
+
+
+cechy = list(wielokrotny("wazne").index)
+grupowy("8_wazne_grupy.png", cechy, wiele("wazne", cechy), 3.4)
+syt = list(wielokrotny("sytuacje").index)
+grupowy("9_sytuacje_grupy.png", syt, wiele("sytuacje", syt), 3.0)
+grupowy("10_cena_grupy.png", ["Do 200 zł", "201–400 zł", "401–700 zł", "Powyżej 700 zł"],
+        lambda d: [int((d.cena == k).sum()) for k in cena], 2.6)
+
+# Średnie ocen w skalach 1-5 według grupy (wykres kropkowy)
+fig, ax = plt.subplots(figsize=(6.4, 1.7))
+for i, (kol, etyk) in enumerate(pytania):
+    sr = [df[df.zajecie == kl][kol].mean() for kl, _, _ in GRUPY]
+    ax.plot(sr, [i, i], color=OS, lw=2, zorder=1)
+    lewy = min(range(2), key=lambda j: sr[j])
+    for j, ((kl, opis, kolor), v) in enumerate(zip(GRUPY, sr)):
+        ax.scatter([v], [i], s=90, color=kolor, zorder=3, edgecolor="white", linewidth=2)
+        przes, wyr = (-0.09, "right") if j == lewy else (0.09, "left")
+        ax.text(v + przes, i, f"{v:.1f}".replace(".", ","), ha=wyr, va="center", fontsize=10, color=TEKST_2)
+ax.set_xlim(0.8, 5.2)
+ax.set_ylim(1.5, -0.7)
+ax.set_xticks([1, 2, 3, 4, 5])
+ax.set_xticklabels(["1\nzdecydowanie nie", "2", "3", "4", "5\nzdecydowanie tak"], fontsize=9.5)
+ax.set_yticks([0, 1])
+ax.set_yticklabels([p_[1] for p_ in pytania])
+ax.grid(axis="x", color=SIATKA, lw=0.8)
+ax.set_axisbelow(True)
+for s_ in ("top", "right", "left"):
+    ax.spines[s_].set_visible(False)
+ax.spines["bottom"].set_color(OS)
+ax.tick_params(length=0, pad=6)
+uchwyty = [plt.Line2D([0], [0], marker="o", ls="", ms=8, color=k_) for _, _, k_ in GRUPY]
+ax.legend(uchwyty, [o for _, o, _ in GRUPY], ncol=2, loc="lower left", bbox_to_anchor=(0, 1.0),
+          frameon=False, fontsize=10, handletextpad=0.3)
+zapisz(fig, "11_skale_grupy.png")
 
 print("Zapisano wykresy w", WYK)
