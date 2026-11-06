@@ -74,11 +74,11 @@ def licz(kol, kolejnosc):
 
 
 # 1. Profil respondentów
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.6, 2.0))
-wiek = ["18–24", "25–34", "45 i więcej"]
-poziomy(a1, ["18-24", "25-34", "45 i więcej"], licz("wiek", wiek), "Wiek")
-zaj = ["Praca na etacie", "Nauka lub studia"]
-poziomy(a2, zaj, licz("zajecie", zaj), "Czym się zajmują")
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.6, 2.4))
+wiek = ["Poniżej 18", "18–24", "25–34", "45 i więcej"]
+poziomy(a1, ["Poniżej 18", "18-24", "25-34", "45 i więcej"], licz("wiek", wiek), "Wiek")
+zaj = ["Praca na etacie", "Nauka lub studia", "Freelance lub własna firma"]
+poziomy(a2, ["Praca na etacie", "Nauka lub studia", "Freelance, własna firma"], licz("zajecie", zaj), "Czym się zajmują")
 fig.subplots_adjust(wspace=0.75)
 zapisz(fig, "1_profil.png")
 
@@ -120,8 +120,9 @@ for j, ((kol, _), kolor, opis) in enumerate(zip(pytania, (NIEBIESKI, POMARANCZ),
         ax.text(x, y + 0.08, str(y), ha="center", va="bottom", fontsize=10, color=TEKST_2)
 ax.set_xticks(range(1, 6))
 ax.set_xticklabels(["1\nzdecydowanie nie", "2", "3", "4", "5\nzdecydowanie tak"])
-ax.set_ylim(0, 5)
-ax.set_yticks(range(0, 6))
+gora = max(int(df[k].value_counts().max()) for k, _ in pytania) + 1
+ax.set_ylim(0, gora)
+ax.set_yticks(range(0, gora + 1))
 ax.set_ylabel("Liczba osób")
 ax.grid(axis="y", color=SIATKA, lw=0.8)
 ax.set_axisbelow(True)
@@ -143,7 +144,9 @@ poziomy(ax, [e.replace("Na platformach typu Allegro czy Amazon", "Allegro, Amazo
 zapisz(fig, "7_gdzie.png")
 
 # --- Porównanie grup: studenci (seria 1) i pracujący (seria 2) ---
-GRUPY = [("Nauka lub studia", "Studenci", NIEBIESKI), ("Praca na etacie", "Pracujący", POMARANCZ)]
+# Studenci = nauka lub studia; pracujący = praca na etacie oraz freelance lub własna firma
+df["grupa"] = df.zajecie.map(lambda z: "Studenci" if z == "Nauka lub studia" else "Pracujący")
+GRUPY = [("Studenci", "Studenci", NIEBIESKI), ("Pracujący", "Pracujący", POMARANCZ)]
 
 
 def grupowy(nazwa, etykiety, wartosci_dla, wysokosc):
@@ -152,7 +155,7 @@ def grupowy(nazwa, etykiety, wartosci_dla, wysokosc):
     k = len(etykiety)
     h = 0.34
     for g, (klucz, opis, kolor) in enumerate(GRUPY):
-        d = df[df.zajecie == klucz]
+        d = df[df.grupa == klucz]
         n = len(d)
         vals = wartosci_dla(d)
         for i, v in enumerate(vals):
@@ -170,7 +173,7 @@ def grupowy(nazwa, etykiety, wartosci_dla, wysokosc):
     ax.spines["left"].set_color(OS)
     ax.tick_params(axis="y", length=0, pad=6)
     uchwyty = [Rectangle((0, 0), 1, 1, fc=k_) for _, _, k_ in GRUPY]
-    ax.legend(uchwyty, [f"{o} ({(df.zajecie == kl).sum()} osób)" for kl, o, _ in GRUPY], ncol=2,
+    ax.legend(uchwyty, [f"{o} ({(df.grupa == kl).sum()} osób)" for kl, o, _ in GRUPY], ncol=2,
               loc="lower left", bbox_to_anchor=(0, 1.0), frameon=False, fontsize=10, handlelength=1.0)
     zapisz(fig, nazwa)
 
