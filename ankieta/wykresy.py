@@ -15,8 +15,8 @@ KAT = Path(__file__).resolve().parent
 WYK = KAT / "wykresy"
 WYK.mkdir(exist_ok=True)
 
-NIEBIESKI = "#2a78d6"
-POMARANCZ = "#eb6834"
+NIEBIESKI = "#4472C4"
+POMARANCZ = "#ED7D31"
 TEKST = "#0b0b0b"
 TEKST_2 = "#52514e"
 SIATKA = "#e1e0d9"
@@ -76,7 +76,7 @@ def licz(kol, kolejnosc):
 # 1. Profil respondentów
 fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.6, 2.0))
 wiek = ["18–24", "25–34", "45 i więcej"]
-poziomy(a1, wiek, licz("wiek", wiek), "Wiek")
+poziomy(a1, ["18-24", "25-34", "45 i więcej"], licz("wiek", wiek), "Wiek")
 zaj = ["Praca na etacie", "Nauka lub studia"]
 poziomy(a2, zaj, licz("zajecie", zaj), "Czym się zajmują")
 fig.subplots_adjust(wspace=0.75)
@@ -85,7 +85,7 @@ zapisz(fig, "1_profil.png")
 # 2. Czas w słuchawkach
 fig, ax = plt.subplots(figsize=(6.0, 1.6))
 czas = ["Do godziny", "1-3 godziny", "Powyżej 3 godzin"]
-poziomy(ax, ["Do godziny", "1–3 godziny", "Powyżej 3 godzin"], licz("czas", czas))
+poziomy(ax, ["Do godziny", "1-3 godziny", "Powyżej 3 godzin"], licz("czas", czas))
 zapisz(fig, "2_czas.png")
 
 # 3. Sytuacje użycia
@@ -103,37 +103,33 @@ zapisz(fig, "4_wazne.png")
 # 5. Budżet
 fig, ax = plt.subplots(figsize=(6.0, 2.0))
 cena = ["Do 200 zł", "201-400 zł", "401-700 zł", "Powyżej 700 zł"]
-poziomy(ax, ["Do 200 zł", "201–400 zł", "401–700 zł", "Powyżej 700 zł"], licz("cena", cena))
+poziomy(ax, ["Do 200 zł", "201-400 zł", "401-700 zł", "Powyżej 700 zł"], licz("cena", cena))
 zapisz(fig, "5_cena.png")
 
-# 6. Skale 1-5: styl i zaufanie do marki (rozbieżny wykres skumulowany)
+# 6. Skale 1-5: zwykły wykres kolumnowy (liczba osób przy każdej ocenie)
 pytania = [("styl", "Słuchawki to element\nmojego stylu"), ("marka", "Ufam tylko sprawdzonym\nmarkom, np. JBL")]
-fig, ax = plt.subplots(figsize=(6.6, 1.9))
-for i, (kol, etyk) in enumerate(pytania):
+fig, ax = plt.subplots(figsize=(6.4, 3.0))
+szer = 0.36
+for j, ((kol, _), kolor, opis) in enumerate(zip(pytania, (NIEBIESKI, POMARANCZ),
+                                             ("Słuchawki to element mojego stylu", "Ufam sprawdzonym markom, np. JBL"))):
     vc = df[kol].value_counts()
-    liczby = [int(vc.get(k, 0)) for k in range(1, 6)]
-    lewo = -(liczby[0] + liczby[1] + liczby[2] / 2)
-    for k, ile in enumerate(liczby):
-        if ile:
-            ax.barh(i, ile, left=lewo, height=0.55, color=SKALA[k], edgecolor="white", linewidth=2)
-            ax.text(lewo + ile / 2, i, str(ile), ha="center", va="center", fontsize=10.5,
-                    color="white" if k in (0, 4) else TEKST)
-        lewo += ile
-    sr = df[kol].mean()
-    ax.text(6.9, i, f"średnio {sr:.1f}".replace(".", ","), va="center", fontsize=10.5, color=TEKST_2)
-ax.axvline(0, color=OS, lw=1, zorder=0)
-ax.set_xlim(-6.5, 8.6)
-ax.set_ylim(1.6, -0.6)
-ax.set_yticks([0, 1])
-ax.set_yticklabels([p[1] for p in pytania])
-ax.set_xticks([])
-for s_ in ("top", "right", "bottom", "left"):
+    xs = [k + (j - 0.5) * szer for k in range(1, 6)]
+    ys = [int(vc.get(k, 0)) for k in range(1, 6)]
+    ax.bar(xs, ys, width=szer, color=kolor, label=opis)
+    for x, y in zip(xs, ys):
+        ax.text(x, y + 0.08, str(y), ha="center", va="bottom", fontsize=10, color=TEKST_2)
+ax.set_xticks(range(1, 6))
+ax.set_xticklabels(["1\nzdecydowanie nie", "2", "3", "4", "5\nzdecydowanie tak"])
+ax.set_ylim(0, 5)
+ax.set_yticks(range(0, 6))
+ax.set_ylabel("Liczba osób")
+ax.grid(axis="y", color=SIATKA, lw=0.8)
+ax.set_axisbelow(True)
+for s_ in ("top", "right", "left"):
     ax.spines[s_].set_visible(False)
-ax.tick_params(axis="y", length=0, pad=6)
-uchwyty = [Rectangle((0, 0), 1, 1, fc=c) for c in SKALA]
-ax.legend(uchwyty, ["1 – zdecydowanie nie", "2", "3", "4", "5 – zdecydowanie tak"], ncol=5,
-          loc="upper center", bbox_to_anchor=(0.45, -0.02), frameon=False, fontsize=10,
-          handlelength=1.0, columnspacing=1.0)
+ax.spines["bottom"].set_color(OS)
+ax.tick_params(length=0)
+ax.legend(loc="lower left", bbox_to_anchor=(0, 1.0), ncol=2, frameon=False, fontsize=10)
 zapisz(fig, "6_skale.png")
 
 # 7. Gdzie kupują
@@ -147,7 +143,7 @@ poziomy(ax, [e.replace("Na platformach typu Allegro czy Amazon", "Allegro, Amazo
 zapisz(fig, "7_gdzie.png")
 
 # --- Porównanie grup: studenci (seria 1) i pracujący (seria 2) ---
-GRUPY = [("Nauka lub studia", "Studenci i uczniowie", NIEBIESKI), ("Praca na etacie", "Pracujący", POMARANCZ)]
+GRUPY = [("Nauka lub studia", "Studenci", NIEBIESKI), ("Praca na etacie", "Pracujący", POMARANCZ)]
 
 
 def grupowy(nazwa, etykiety, wartosci_dla, wysokosc):
@@ -187,34 +183,7 @@ cechy = list(wielokrotny("wazne").index)
 grupowy("8_wazne_grupy.png", cechy, wiele("wazne", cechy), 3.4)
 syt = list(wielokrotny("sytuacje").index)
 grupowy("9_sytuacje_grupy.png", syt, wiele("sytuacje", syt), 3.0)
-grupowy("10_cena_grupy.png", ["Do 200 zł", "201–400 zł", "401–700 zł", "Powyżej 700 zł"],
+grupowy("10_cena_grupy.png", ["Do 200 zł", "201-400 zł", "401-700 zł", "Powyżej 700 zł"],
         lambda d: [int((d.cena == k).sum()) for k in cena], 2.6)
-
-# Średnie ocen w skalach 1-5 według grupy (wykres kropkowy)
-fig, ax = plt.subplots(figsize=(6.4, 1.7))
-for i, (kol, etyk) in enumerate(pytania):
-    sr = [df[df.zajecie == kl][kol].mean() for kl, _, _ in GRUPY]
-    ax.plot(sr, [i, i], color=OS, lw=2, zorder=1)
-    lewy = min(range(2), key=lambda j: sr[j])
-    for j, ((kl, opis, kolor), v) in enumerate(zip(GRUPY, sr)):
-        ax.scatter([v], [i], s=90, color=kolor, zorder=3, edgecolor="white", linewidth=2)
-        przes, wyr = (-0.09, "right") if j == lewy else (0.09, "left")
-        ax.text(v + przes, i, f"{v:.1f}".replace(".", ","), ha=wyr, va="center", fontsize=10, color=TEKST_2)
-ax.set_xlim(0.8, 5.2)
-ax.set_ylim(1.5, -0.7)
-ax.set_xticks([1, 2, 3, 4, 5])
-ax.set_xticklabels(["1\nzdecydowanie nie", "2", "3", "4", "5\nzdecydowanie tak"], fontsize=9.5)
-ax.set_yticks([0, 1])
-ax.set_yticklabels([p_[1] for p_ in pytania])
-ax.grid(axis="x", color=SIATKA, lw=0.8)
-ax.set_axisbelow(True)
-for s_ in ("top", "right", "left"):
-    ax.spines[s_].set_visible(False)
-ax.spines["bottom"].set_color(OS)
-ax.tick_params(length=0, pad=6)
-uchwyty = [plt.Line2D([0], [0], marker="o", ls="", ms=8, color=k_) for _, _, k_ in GRUPY]
-ax.legend(uchwyty, [o for _, o, _ in GRUPY], ncol=2, loc="lower left", bbox_to_anchor=(0, 1.0),
-          frameon=False, fontsize=10, handletextpad=0.3)
-zapisz(fig, "11_skale_grupy.png")
 
 print("Zapisano wykresy w", WYK)
