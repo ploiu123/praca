@@ -88,8 +88,8 @@ function obraz(plik, skala) {
 const tresc = [
   new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 60, after: 240 }, children: [t("Warsztat Single Customer View", { bold: true, size: 32 })] }),
 
-  h1("Wskaźniki"),
-  p("Zaangażowanie = (polubienia + komentarze + udostępnienia) / wyświetlenia × 100%, konwersja po kliknięciu = zakupy / kliknięcia w link × 100%."),
+  h1("2. Wskaźniki"),
+  p("Zaangażowanie policzyliśmy jako sumę polubień, komentarzy i udostępnień podzieloną przez liczbę wyświetleń, a konwersję po kliknięciu jako liczbę zakupów podzieloną przez liczbę kliknięć w link. Wyniki są w procentach, zaokrąglone do jednego miejsca po przecinku."),
   prostaTabela(["Post", "Kanał i format", "Zaangażowanie", "Kliknięcia w link", "Zakupy", "Konwersja po kliknięciu"], [
     ["104", "Instagram, Stories", "6,4%", "600", "3", "0,5%"],
     ["108", "Instagram, Reels", "22,9%", "470", "9", "1,9%"],
@@ -97,18 +97,21 @@ const tresc = [
     ["110", "Instagram, post z obrazem", "16,6%", "500", "16", "3,2%"],
   ], [700, 2676, 1550, 1450, 950, 1700], [false, false, true, true, true, true]),
   obraz("wykres_wskazniki.png", 0.36),
+  p("Już na pierwszy rzut oka widać, że duże zaangażowanie nie oznacza dużej sprzedaży. Post, na który ludzie najchętniej reagują, wcale nie sprzedaje najlepiej."),
 
-  h1("Wybór posta"),
-  li("Najwyższe zaangażowanie: post 108 (Reels), 22,9%."),
-  li("Najwyższa konwersja: post 110 (post z obrazem), 3,2%."),
-  li("Dużo kliknięć, mało zakupów: post 104 (Stories), 600 kliknięć i tylko 3 zakupy (0,5%)."),
-  p("Do dalszego testu wybieramy post 110 „Inspiracje na zimę”, bo ma najwyższą konwersję (3,2%) i przy tym wysokie zaangażowanie (16,6%). Post 108 jest najbardziej lubiany, ale słabiej sprzedaje (1,9%)."),
+  h1("3. Wybór posta do dalszego testu"),
+  p([t("Najwyższe zaangażowanie: ", { bold: true }), t("post 108, czyli Reels „Jak nosić elegancko” (22,9%). Krótki film z poradami dobrze się ogląda, dlatego zebrał dużo polubień i komentarzy. Z 470 kliknięć wyszło jednak tylko 9 zakupów (konwersja 1,9%). Taki materiał działa bardziej jako inspiracja i budowanie marki niż bezpośrednia zachęta do zakupu.")]),
+  p([t("Najwyższa konwersja: ", { bold: true }), t("post 110, czyli post z obrazem „Inspiracje na zimę” (3,2%). Z 500 kliknięć 16 zakończyło się zakupem. Post pokazuje konkretne ubrania w stylizacjach, więc osoby, które klikają, wiedzą już, czego szukają w sklepie.")]),
+  p([t("Dużo kliknięć, mało zakupów: ", { bold: true }), t("post 104, czyli Stories „Nowe trendy zimowe”. Dał 600 kliknięć, ale tylko 3 zakupy (0,5%). W Stories łatwo kliknąć link przy szybkim przeglądaniu, ale takie osoby często od razu wychodzą ze sklepu. Możliwe też, że strona, na którą prowadził link, nie pokazywała tego, co było w relacji.")]),
+  p("Post 109 z wyprzedażą dał najwięcej zakupów (20), ale miał też największy zasięg (30 000 wyświetleń), a jego sprzedaż w dużej mierze napędzały rabaty, które obniżają marżę."),
+  p([t("Do dalszego testu sprzedażowego wybieramy post 110. ", { bold: true }), t("Przemawiają za nim dwie liczby: najwyższa konwersja po kliknięciu (3,2%) i drugie najwyższe zaangażowanie (16,6%). Jako jedyny wypada dobrze w obu wskaźnikach, czyli i przyciąga uwagę, i sprzedaje. W teście sprawdzilibyśmy, czy przy większym budżecie utrzyma taką konwersję.")]),
 
-  h1("Dane do profilu SCV"),
-  li("Źródło 1: sklep internetowy, czyli konta klientów i historia zamówień."),
-  li("Źródło 2: newsletter i baza klientów (CRM), czyli zapisy i kliknięcia w maile."),
-  li("Wspólny identyfikator: adres e-mail klienta."),
-  p("Przykład: klient wszedł z posta 110, dodał kurtkę do koszyka, ale jej nie kupił. Jest zapisany do newslettera, więc następnego dnia dostaje maila z przypomnieniem o koszyku."),
+  h1("4. Dane do profilu SCV"),
+  p("Wyniki postów są zbiorcze: wiemy, ile osób kliknęło i kupiło, ale nie wiemy, kim one są i co robiły wcześniej. Wspólny profil klienta (SCV) łączy informacje o tej samej osobie z różnych miejsc. Wykorzystalibyśmy dwa źródła danych własnych marki:"),
+  li([t("Sklep internetowy: ", { bold: true }), t("konto klienta, historia zamówień, kupione produkty i rozmiary, porzucone koszyki. Jeśli linki w postach mają oznaczenia UTM, sklep zapisuje też, z którego posta klient przyszedł.")]),
+  li([t("Newsletter i program lojalnościowy (CRM): ", { bold: true }), t("zapis do newslettera, otwarcia i kliknięcia w maile, zgody marketingowe, punkty i nagrody.")]),
+  p([t("Wspólny identyfikator: ", { bold: true }), t("adres e-mail. Klient podaje go przy rejestracji i zakupie w sklepie oraz przy zapisie do newslettera, więc po nim można połączyć oba źródła w jeden profil.")]),
+  p([t("Przykład wykorzystania: ", { bold: true }), t("klient wszedł do sklepu z posta „Inspiracje na zimę”, dodał płaszcz do koszyka, ale go nie kupił. Z profilu wiemy, że jest zapisany do newslettera i zwykle kupuje rozmiar M. Następnego dnia wysyłamy mu maila z przypomnieniem o koszyku i dwiema podobnymi stylizacjami w jego rozmiarze. Wracamy do niego bez płacenia drugi raz za reklamę.")]),
 ];
 
 const stopka = new Footer({ children: [new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ children: [PageNumber.CURRENT], font: FONT, size: 20 })] })] });
