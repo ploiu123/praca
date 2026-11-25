@@ -1,4 +1,4 @@
-"""Dodaje natywną linię trendu (z równaniem i R²) do wykresu rozrzutu w prezentacji.
+"""Dodaje natywną linię trendu (przerywaną, bez etykiety) do wykresu rozrzutu w prezentacji.
 
 Uruchomienie:  python3 trendline.py Analityka_warsztaty.pptx
 """
@@ -13,8 +13,7 @@ tmp = plik.with_suffix(".tmp.pptx")
 
 TREND = ('<c:trendline><c:spPr><a:ln w="19050"><a:solidFill><a:srgbClr val="1E2B37"/></a:solidFill>'
          '<a:prstDash val="dash"/></a:ln></c:spPr><c:trendlineType val="linear"/>'
-         '<c:dispRSqr val="1"/><c:dispEq val="1"/>'
-         '<c:trendlineLbl><c:numFmt formatCode="0.00" sourceLinked="0"/></c:trendlineLbl></c:trendline>')
+         '<c:dispRSqr val="0"/><c:dispEq val="0"/></c:trendline>')  # równanie i R² są w tabeli na slajdzie
 
 zmienione = 0
 with zipfile.ZipFile(plik) as zin, zipfile.ZipFile(tmp, "w", zipfile.ZIP_DEFLATED) as zout:
