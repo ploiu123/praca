@@ -369,62 +369,73 @@ tekst(s, [B("Jak wiarygodnie zmierzyć efekt", true), ...punkty([
 // =============================================================================
 // PROJEKT 3 – segmentacja rynku
 // =============================================================================
-sekcja("03", "Segmentacja rynku", "Ankieta „Opinia klienta”: słuchawki bezprzewodowe, 15 respondentów",
-  "PROJEKT 3 · SEGMENTACJA RYNKU", "Trzeci projekt to nasza ankieta o słuchawkach bezprzewodowych. Na jej podstawie podzieliliśmy respondentów na segmenty i wybraliśmy segment docelowy.");
+sekcja("03", "Segmentacja rynku", "Ankieta „Opinia klienta”: słuchawki bezprzewodowe JBL, 27 respondentów",
+  "PROJEKT 3 · SEGMENTACJA RYNKU", "Trzeci projekt to nasza ankieta o słuchawkach bezprzewodowych JBL. Na jej podstawie podzieliliśmy respondentów na segmenty i wybraliśmy segment docelowy.");
 
-s = slajd("Badanie i kryteria segmentacji", "Ankieta była prowadzona w Formularzach Google od 30 października do 6 listopada 2026. Pytania dobraliśmy tak, żeby pokrywały różne kryteria segmentacji: demograficzne, behawioralne, korzyści, cenowe i psychograficzne.");
+s = slajd("Produkt, cel i kryteria segmentacji", "Produkt to słuchawki bezprzewodowe JBL. Ankietę zrobiliśmy w Formularzach Google: 10 pytań (jednokrotny i wielokrotny wybór, skala Likerta 1-5, jedno pytanie otwarte). Odpowiedzi zbieraliśmy od 30 października do 9 listopada 2026. Formularz wysłano 32 razy, ale 6 identycznych zgłoszeń przyszło w ciągu 30 sekund, więc policzyliśmy je jako jedną osobę. Zostało 27 odpowiedzi.");
 tabela(s, ["Kryterium", "Pytania w ankiecie"], [
   ["Demograficzne", "wiek, czym się zajmujesz"],
   ["Behawioralne", "czas w słuchawkach, sytuacje, miejsce zakupu"],
-  ["Poszukiwane korzyści", "najważniejsze cechy słuchawek"],
+  ["Poszukiwane korzyści", "najważniejsze cechy, czego brakuje"],
   ["Cenowe", "ile maksymalnie zapłacisz"],
   ["Psychograficzne", "słuchawki jako styl, zaufanie do marki"],
-], { x: 0.5, y: 1.4, w: 5.4, colW: [1.9, 3.5], font: 12, rowH: 0.48, pierwszaPogrubiona: true, nazwa: "tabela_kryteria" });
-[["15", "respondentów"], ["10", "pytań, w tym 1 otwarte"], ["8 dni", "zbierania odpowiedzi"]].forEach(([l, o], i) => {
-  karta(s, 6.2, 1.4 + i * 1.2, 3.3, 1.05, `badanie_${i}`);
-  liczba(s, 6.45, 1.42 + i * 1.2, 2.9, l, o, C.accent1, 24);
+], { x: 0.5, y: 1.3, w: 5.4, colW: [1.9, 3.5], font: 12, rowH: 0.45, pierwszaPogrubiona: true, nazwa: "tabela_kryteria" });
+tekst(s, [B("Produkt: "), T("słuchawki bezprzewodowe JBL.", true), B("Cel: "), T("poznać grupy klientów i wybrać segment docelowy.")], 0.5, 4.2, 5.4, 0.7, { fontSize: 12, color: C.text2 });
+[["27", "respondentów"], ["10", "pytań, w tym 1 otwarte"], ["11 dni", "zbierania odpowiedzi"]].forEach(([l, o], i) => {
+  karta(s, 6.2, 1.3 + i * 1.2, 3.3, 1.05, `badanie_${i}`);
+  liczba(s, 6.45, 1.32 + i * 1.2, 2.9, l, o, C.accent1, 24);
 });
 
-s = slajd("Kim są respondenci", "Większość to młode osoby: ponad połowa ma 18-24 lata. Pracujących na etacie i studentów jest tyle samo, po 7 osób, i jedna osoba prowadzi własną firmę.");
-slupki(s, ["Poniżej 18", "18-24", "25-34", "45 i więcej"], [1, 8, 5, 1], { x: 0.4, y: 1.25, w: 4.5, h: 3.0, tytul: "Wiek (liczba osób)", max: 10, nazwa: "wykres_wiek" });
-slupki(s, ["Praca na etacie", "Nauka lub studia", "Freelance, firma"], [7, 7, 1], { x: 5.1, y: 1.25, w: 4.5, h: 3.0, tytul: "Zajęcie (liczba osób)", max: 9, nazwa: "wykres_zajecie" });
-tekst(s, "Ponad połowa (8 z 15) ma 18-24 lata. Studenci i pracujący to dwie równe grupy.", 0.5, 4.45, 9, 0.5, { fontSize: 13, color: C.text2 });
+s = slajd("Kim są respondenci", "Większość to młode osoby: 23 z 27 ma mniej niż 35 lat. Studentów i pracujących na etacie jest po 11, a 5 osób prowadzi własną firmę lub pracuje jako freelancer.");
+slupki(s, ["Poniżej 18", "18-24", "25-34", "35-44", "45 i więcej"], [5, 10, 8, 2, 2], { x: 0.4, y: 1.25, w: 4.5, h: 3.0, tytul: "Wiek (liczba osób)", max: 12, nazwa: "wykres_wiek" });
+slupki(s, ["Praca na etacie", "Nauka lub studia", "Freelance, firma"], [11, 11, 5], { x: 5.1, y: 1.25, w: 4.5, h: 3.0, tytul: "Zajęcie (liczba osób)", max: 13, nazwa: "wykres_zajecie" });
+tekst(s, "Najwięcej osób ma 18-24 lata (10 z 27). Studenci i pracujący na etacie to dwie równe grupy.", 0.5, 4.45, 9, 0.5, { fontSize: 13, color: C.text2 });
 
-s = slajd("Jak korzystają ze słuchawek", "Widać podział na osoby, które używają słuchawek krótko, i takie, które mają je na uszach przez dużą część dnia. Najczęstsza sytuacja to granie.");
-slupki(s, ["Podczas grania", "W drodze", "W pracy lub nauce", "Na treningu", "W domu dla relaksu"], [8, 6, 5, 5, 5], { x: 0.4, y: 1.25, w: 5.4, h: 3.6, tytul: "Sytuacje (liczba wskazań)", max: 10, nazwa: "wykres_sytuacje" });
+s = slajd("Jak korzystają ze słuchawek", "Prawie połowa respondentów (13 z 27) używa słuchawek ponad 3 godziny dziennie. Najczęstsza sytuacja to praca lub nauka, zaraz potem granie.");
+slupki(s, ["W pracy lub nauce", "Podczas grania", "Na treningu", "W domu dla relaksu", "W drodze"], [14, 12, 9, 9, 8], { x: 0.4, y: 1.25, w: 5.4, h: 3.6, tytul: "Sytuacje (liczba wskazań)", max: 17, nazwa: "wykres_sytuacje" });
 karta(s, 6.1, 1.35, 3.4, 3.45, "czas_dziennie");
 s.addText("Czas dziennie", { x: 6.35, y: 1.5, w: 2.9, h: 0.35, isTextBox: true, fontSize: 14, bold: true, color: C.text1, margin: 0 });
-liczba(s, 6.35, 1.85, 2.9, "6 osób", "do godziny dziennie", C.accent1, 24);
-liczba(s, 6.35, 2.75, 2.9, "3 osoby", "od 1 do 3 godzin", C.accent3, 24);
-liczba(s, 6.35, 3.65, 2.9, "6 osób", "ponad 3 godziny dziennie", C.accent2, 24);
+liczba(s, 6.35, 1.85, 2.9, "8 osób", "do godziny dziennie", C.accent1, 24);
+liczba(s, 6.35, 2.75, 2.9, "6 osób", "od 1 do 3 godzin", C.accent3, 24);
+liczba(s, 6.35, 3.65, 2.9, "13 osób", "ponad 3 godziny dziennie", C.accent2, 24);
 
-s = slajd("Jakich korzyści szukają", "Wygoda wygrywa zdecydowanie: wybrało ją 13 z 15 osób. Zaraz potem jest jakość dźwięku. Wygląd wskazała tylko jedna osoba, więc to cecha drugorzędna.");
-slupki(s, ["Wygoda noszenia", "Jakość dźwięku i bas", "Wyciszenie (ANC)", "Mocna bateria", "Cena i promocje", "Wygląd i design"], [13, 11, 8, 7, 4, 1], { x: 0.4, y: 1.25, w: 5.6, h: 3.6, tytul: "Najważniejsze cechy (liczba wskazań)", max: 15, nazwa: "wykres_cechy" });
+s = slajd("Jakich korzyści szukają", "Wygoda wygrywa: wybrało ją 20 z 27 osób. Zaraz potem jest jakość dźwięku (18 osób). Wygląd wskazały tylko 2 osoby, więc to cecha drugorzędna.");
+slupki(s, ["Wygoda noszenia", "Jakość dźwięku i bas", "Wyciszenie (ANC)", "Mocna bateria", "Cena i promocje", "Wygląd i design"], [20, 18, 13, 12, 10, 2], { x: 0.4, y: 1.25, w: 5.6, h: 3.6, tytul: "Najważniejsze cechy (liczba wskazań)", max: 24, nazwa: "wykres_cechy" });
 karta(s, 6.3, 1.35, 3.2, 1.45, "kpi_wygoda");
-liczba(s, 6.55, 1.4, 2.8, "87%", "wybrało wygodę noszenia", C.accent1, 26);
+liczba(s, 6.55, 1.4, 2.8, "74%", "wybrało wygodę noszenia", C.accent1, 26);
 karta(s, 6.3, 3.0, 3.2, 1.45, "kpi_wyglad");
 liczba(s, 6.55, 3.05, 2.8, "7%", "wskazało wygląd i design", C.accent2, 26);
 
-s = slajd("Budżet i kanały zakupu", "Budżety są zróżnicowane, ale ponad połowa wyda więcej niż 400 zł. Większość kupuje przez internet, ale sklep stacjonarny wybrały aż 4 osoby.");
-slupki(s, ["Do 200 zł", "201-400 zł", "401-700 zł", "Powyżej 700 zł"], [3, 4, 5, 3], { x: 0.4, y: 1.25, w: 4.5, h: 3.1, tytul: "Maksymalny budżet (liczba osób)", max: 7, nazwa: "wykres_budzet" });
-slupki(s, ["Sklepy internetowe", "Sklep stacjonarny", "Strona producenta", "Allegro, Amazon"], [5, 4, 4, 2], { x: 5.1, y: 1.25, w: 4.5, h: 3.1, tytul: "Miejsce zakupu (liczba osób)", max: 7, kolor: HEX.accent2, nazwa: "wykres_gdzie" });
-tekst(s, "8 z 15 osób wyda ponad 400 zł, a 11 z 15 kupuje przez internet.", 0.5, 4.5, 9, 0.45, { fontSize: 13, color: C.text2 });
+s = slajd("Budżet i kanały zakupu", "Ponad połowa (16 z 27) wyda na słuchawki więcej niż 400 zł. Najczęściej wybierane miejsce zakupu to sklep stacjonarny (12 osób), ale łącznie przez internet kupuje 15 osób.");
+slupki(s, ["Do 200 zł", "201-400 zł", "401-700 zł", "Powyżej 700 zł"], [5, 6, 11, 5], { x: 0.4, y: 1.25, w: 4.5, h: 3.1, tytul: "Maksymalny budżet (liczba osób)", max: 13, nazwa: "wykres_budzet" });
+slupki(s, ["Sklep stacjonarny", "Sklepy internetowe", "Strona producenta", "Allegro, Amazon"], [12, 7, 4, 4], { x: 5.1, y: 1.25, w: 4.5, h: 3.1, tytul: "Miejsce zakupu (liczba osób)", max: 14, kolor: HEX.accent2, nazwa: "wykres_gdzie" });
+tekst(s, "16 z 27 osób wyda ponad 400 zł. 12 osób kupuje w sklepie stacjonarnym, 15 przez internet.", 0.5, 4.5, 9, 0.45, { fontSize: 13, color: C.text2 });
 
-s = slajd("Styl i zaufanie do marki", "Pytania w skali 1-5. Styl ma umiarkowane znaczenie (3,3). Zaufanie do marki jest podzielone: 6 osób dało 5, ale 4 osoby tylko 2.");
-grupowe(s, ["1", "2", "3", "4", "5"], [["Słuchawki to element mojego stylu", [2, 2, 4, 4, 3]], ["Ufam sprawdzonym markom, np. JBL", [0, 4, 4, 1, 6]]], { x: 0.4, y: 1.2, w: 5.8, h: 3.75, max: 7, pion: true, nazwa: "wykres_skale" });
+s = slajd("Styl i zaufanie do marki", "Pytania w skali 1-5. Styl ma umiarkowane znaczenie (średnio 3,3). Sprawdzonym markom ufa ponad połowa: 15 osób dało 4 lub 5, a nikt nie dał 1.");
+grupowe(s, ["1", "2", "3", "4", "5"], [["Słuchawki to element mojego stylu", [3, 3, 9, 6, 6]], ["Ufam sprawdzonym markom, np. JBL", [0, 4, 8, 7, 8]]], { x: 0.4, y: 1.2, w: 5.8, h: 3.75, max: 11, pion: true, nazwa: "wykres_skale" });
 karta(s, 6.45, 1.35, 3.05, 1.35, "sr_styl");
 liczba(s, 6.7, 1.4, 2.6, "3,3", "średnio: styl (1-5)", C.accent1, 26);
 karta(s, 6.45, 2.9, 3.05, 1.35, "sr_marka");
-liczba(s, 6.7, 2.95, 2.6, "3,6", "średnio: zaufanie do marki", C.accent2, 26);
+liczba(s, 6.7, 2.95, 2.6, "3,7", "średnio: zaufanie do marki", C.accent2, 26);
+
+s = slajd("Dwie grupy: studenci i pracujący", "Porównaliśmy dwie grupy respondentów: osoby uczące się lub studiujące (11) i pracujące (16, w tym 5 z własną firmą). Studenci słuchają głównie przy graniu i bardziej cenią dźwięk, pracujący używają słuchawek w pracy i najbardziej cenią wygodę.");
+grupowe(s, ["Wygoda", "Dźwięk i bas", "Wyciszenie (ANC)", "Bateria", "Cena i promocje"], [["Studenci (11)", [0.64, 0.73, 0.55, 0.45, 0.45]], ["Pracujący (16)", [0.81, 0.62, 0.44, 0.44, 0.31]]],
+  { x: 0.4, y: 1.2, w: 5.2, h: 3.75, max: 1, format: "0%", tytul: "Co ważne przy wyborze (% osób w grupie)", nazwa: "wykres_grupy" });
+tabela(s, ["", "Studenci", "Pracujący"], [
+  ["Najczęstsze użycie", "granie (8 z 11)", "praca (10 z 16)"],
+  ["Ponad 3 h dziennie", "6 z 11", "7 z 16"],
+  ["Budżet ponad 400 zł", "6 z 11", "10 z 16"],
+  ["Zaufanie do marki", "3,5", "3,9"],
+], { x: 5.85, y: 1.35, w: 3.65, colW: [1.45, 1.1, 1.1], font: 11, rowH: 0.5, pierwszaPogrubiona: true, nazwa: "tabela_grupy" });
 
 // Macierz segmentów
-s = slajd("Segmentacja: cztery grupy klientów", "Segmenty wyznaczyliśmy według dwóch kryteriów: ile czasu dziennie ktoś używa słuchawek (do godziny albo dłużej) i ile jest gotów wydać (do 400 zł albo więcej). To proste kryteria behawioralne i cenowe, które najlepiej różnicują odpowiedzi.");
+s = slajd("Segmentacja: cztery grupy klientów", "Segmenty wyznaczyliśmy według dwóch kryteriów: ile czasu dziennie ktoś używa słuchawek (do godziny albo dłużej) i ile jest gotów wydać (do 400 zł albo więcej). To kryterium behawioralne i cenowe, podobnie jak w przykładzie z wykładu, gdzie klientów dzielono na kupujących drogo lub tanio i często lub rzadko.");
 const MX = 1.55, MY = 1.3, MW = 3.85, MH = 1.75, GAP = 0.12;
 const kw = [
-  [MX, MY, "C", "Wierni marce", "2 osoby · 13%", "krótko używają, ale wydadzą 401-700 zł", C.background2, C.text1],
-  [MX + MW + GAP, MY, "A", "Entuzjaści dźwięku", "6 osób · 40%", "długo używają i wydadzą ponad 400 zł", C.accent1, C.background1],
-  [MX, MY + MH + GAP, "D", "Okazjonalni oszczędni", "4 osoby · 27%", "do godziny dziennie, budżet do 400 zł", C.background2, C.text1],
-  [MX + MW + GAP, MY + MH + GAP, "B", "Praktyczni pracujący", "3 osoby · 20%", "długo używają, budżet do 400 zł", C.background2, C.text1],
+  [MX, MY, "C", "Wierni marce", "2 osoby · 7%", "krótko używają, ale wydadzą 401-700 zł", C.background2, C.text1],
+  [MX + MW + GAP, MY, "A", "Entuzjaści dźwięku", "14 osób · 52%", "długo używają i wydadzą ponad 400 zł", C.accent1, C.background1],
+  [MX, MY + MH + GAP, "D", "Okazjonalni oszczędni", "6 osób · 22%", "do godziny dziennie, budżet do 400 zł", C.background2, C.text1],
+  [MX + MW + GAP, MY + MH + GAP, "B", "Praktyczni pracujący", "5 osób · 19%", "długo używają, budżet do 400 zł", C.background2, C.text1],
 ];
 kw.forEach(([x, y, lit, nazwa, ile, op, fill, kol]) => {
   karta(s, x, y, MW, MH, `segment_${lit}`, fill);
@@ -437,32 +448,32 @@ s.addText("Budżet\ndo 400 zł", { x: 0.2, y: MY + MH + GAP, w: 1.25, h: MH, isT
 s.addText("Do godziny dziennie", { x: MX, y: MY + 2 * MH + GAP + 0.05, w: MW, h: 0.3, isTextBox: true, fontSize: 11, bold: true, color: C.text2, align: "center", margin: 0 });
 s.addText("Ponad godzinę dziennie", { x: MX + MW + GAP, y: MY + 2 * MH + GAP + 0.05, w: MW, h: 0.3, isTextBox: true, fontSize: 11, bold: true, color: C.text2, align: "center", margin: 0 });
 
-s = slajd("Profile segmentów", "Profil każdego segmentu z odpowiedzi w ankiecie. Entuzjaści to głównie młodzi studenci, którzy cenią dźwięk i kupują w sklepach stacjonarnych lub u producenta. Praktyczni pracujący potrzebują wygody i baterii na cały dzień i kupują online.");
+s = slajd("Profile segmentów", "Profil każdego segmentu z odpowiedzi w ankiecie. Entuzjaści to głównie młode osoby, które cenią dźwięk i wygodę i kupują w sklepach stacjonarnych. Praktyczni pracujący używają słuchawek w pracy i kupują online. Wierni marce w pełni ufają sprawdzonym markom. Okazjonalni oszczędni to najmniej zadowolona grupa: 5 z 6 napisało, czego brakuje im w obecnych słuchawkach.");
 tabela(s, ["", "A Entuzjaści dźwięku", "B Praktyczni pracujący", "C Wierni marce", "D Okazjonalni oszczędni"], [
-  ["Liczebność", "6 osób (40%)", "3 osoby (20%)", "2 osoby (13%)", "4 osoby (27%)"],
-  ["Kto", "głównie studenci, 18-24 lata", "wszyscy pracują na etacie", "pracujący", "głównie studenci"],
-  ["Jak używają", "granie, w drodze, trening", "w pracy i w domu", "praca, dom", "granie, w drodze"],
-  ["Co ważne", "dźwięk (6 z 6), wygoda", "bateria i wygoda (3 z 3)", "wygoda", "dźwięk, wygoda, cena"],
-  ["Budżet", "3 osoby ponad 700 zł", "do 400 zł", "401-700 zł", "201-400 zł"],
-  ["Gdzie kupują", "sklep stacjonarny, producent", "sklepy internetowe", "Allegro, producent", "różnie"],
-  ["Zaufanie do marki", "3,3", "3,3", "5,0", "3,5"],
+  ["Liczebność", "14 osób (52%)", "5 osób (19%)", "2 osoby (7%)", "6 osób (22%)"],
+  ["Kto", "9 z 14 poniżej 25 lat, studenci i pracujący", "głównie pracujący na etacie, 25-34 lata", "pracujący na etacie", "głównie uczniowie i studenci"],
+  ["Jak używają", "10 z 14 ponad 3 h dziennie", "głównie w pracy (4 z 5)", "do godziny dziennie", "do godziny, często granie"],
+  ["Co ważne", "dźwięk i wygoda (po 10 z 14)", "wygoda (5 z 5)", "wygoda (2 z 2)", "dźwięk i bateria (po 4 z 6)"],
+  ["Budżet", "5 osób ponad 700 zł", "3 z 5 do 200 zł", "401-700 zł", "do 400 zł"],
+  ["Gdzie kupują", "sklep stacjonarny (9 z 14)", "sklepy internetowe (4 z 5)", "Allegro, producent", "różnie"],
+  ["Zaufanie do marki", "3,6", "3,4", "5,0", "3,7"],
 ], { x: 0.5, y: 1.3, w: 9, colW: [1.45, 2.05, 1.9, 1.6, 2.0], font: 11, rowH: 0.47, pierwszaPogrubiona: true, nazwa: "tabela_segmenty" });
 
-s = slajd("Segment docelowy i działania", "Jako segment docelowy wybieramy Entuzjastów dźwięku: to największa grupa (40%), najdłużej używa słuchawek i ma najwyższy budżet. Dla pozostałych segmentów proponujemy osobne, tańsze działania.");
+s = slajd("Segment docelowy i działania", "Jako segment docelowy wybieramy Entuzjastów dźwięku: to ponad połowa respondentów (14 z 27), 10 z 14 używa słuchawek ponad 3 godziny dziennie i wszyscy wydadzą ponad 400 zł. Dla pozostałych segmentów proponujemy osobne, tańsze działania.");
 karta(s, 0.5, 1.3, 4.4, 3.55, "cel_A", C.accent1);
 tekst(s, [{ text: "Segment docelowy: A Entuzjaści dźwięku", options: { bold: true, color: C.background1, breakLine: true, fontSize: 16 } },
   { text: " ", options: { breakLine: true, fontSize: 6 } },
-  { text: "40% respondentów, najdłużej używają słuchawek, 3 z 6 wydadzą ponad 700 zł.", options: { color: C.background1, breakLine: true } },
+  { text: "52% respondentów, 10 z 14 używa słuchawek ponad 3 godziny dziennie, 5 z 14 wyda ponad 700 zł.", options: { color: C.background1, breakLine: true } },
   { text: " ", options: { breakLine: true, fontSize: 6 } },
-  { text: "Pozycjonowanie: słuchawki z mocnym dźwiękiem, wygodne na wiele godzin grania i w drodze.", options: { color: C.background2, italic: true } }],
+  { text: "Pozycjonowanie: słuchawki JBL z mocnym dźwiękiem, wygodne przez wiele godzin grania, nauki i pracy.", options: { color: C.background2, italic: true } }],
   0.8, 1.55, 3.85, 3.1, { fontSize: 14 });
 tabela(s, ["Segment", "Co proponujemy"], [
-  ["A Entuzjaści", "testy dźwięku w sklepach, treści dla graczy"],
-  ["B Praktyczni", "długa bateria i wygoda w modelach do 400 zł, sprzedaż online"],
+  ["A Entuzjaści", "testy dźwięku w sklepach stacjonarnych, modele z ANC, treści dla graczy"],
+  ["B Praktyczni", "modele do 400 zł z długą baterią, promocje w sklepach internetowych"],
   ["C Wierni marce", "program lojalnościowy, nowości dla stałych klientów"],
-  ["D Okazjonalni", "promocje i rabaty na pierwsze słuchawki"],
+  ["D Okazjonalni", "zniżki studenckie, promocje np. w Black Friday"],
 ], { x: 5.1, y: 1.3, w: 4.4, colW: [1.35, 3.05], font: 11, rowH: 0.55, pierwszaPogrubiona: true, wyroznij: [0], nazwa: "tabela_dzialania" });
-tekst(s, "15 odpowiedzi to mała próba, więc segmenty pokazują kierunki do sprawdzenia na większej grupie.", 5.1, 4.45, 4.4, 0.5, { fontSize: 11, color: C.text2 });
+tekst(s, "27 odpowiedzi to mała próba, więc segmenty pokazują kierunki do sprawdzenia na większej grupie.", 5.1, 4.45, 4.4, 0.5, { fontSize: 11, color: C.text2 });
 
 // =============================================================================
 // PROJEKT 4 – SCV
@@ -535,7 +546,7 @@ s = slajd("Najważniejsze wnioski", "Krótko o każdym projekcie: w jednym zdani
 [
   ["1", "Filtrowanie danych", "Powracający dają 97% przychodu. Trzeba zadbać o pierwszy zakup nowych, zwłaszcza na telefonach."],
   ["2", "Korelacja i DAG", "Korelacja 0,999 nie dowodzi efektu reklamy. Decyzję o +30% warto oprzeć na eksperymencie."],
-  ["3", "Segmentacja", "Segment docelowy to Entuzjaści dźwięku: 40% osób, długie użytkowanie i najwyższy budżet."],
+  ["3", "Segmentacja", "Segment docelowy to Entuzjaści dźwięku: 52% osób, długie użytkowanie i najwyższy budżet."],
   ["4", "Analiza SCV", "Post 110 łączy zaangażowanie z konwersją. E-mail łączy dane ze sklepu i newslettera."],
 ].forEach(([nr, t1, t2], i) => {
   const x = 0.5 + (i % 2) * 4.6, y = 1.35 + Math.floor(i / 2) * 1.85;

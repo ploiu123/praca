@@ -30,7 +30,13 @@ plt.rcParams.update({
 
 df = pd.read_csv(KAT / "odpowiedzi.csv")
 df.columns = ["ts", "wiek", "zajecie", "czas", "sytuacje", "wazne", "cena", "styl", "marka", "gdzie", "brak"]
+# te same odpowiedzi wysłane kilka razy pod rząd liczymy jako jedną
+df = df.drop_duplicates(subset=df.columns[1:], keep="first").reset_index(drop=True)
 N = len(df)
+
+
+def proc(x):
+    return f"{int(x * 100 + 0.5)}%"
 
 
 def wielokrotny(kol):
@@ -53,7 +59,7 @@ def poziomy(ax, etykiety, wartosci, tytul=None, sortuj=False):
     ax.set_yticklabels(etykiety)
     for i, v in enumerate(wartosci):
         slupek(ax, i, v, 0.56, NIEBIESKI)
-        ax.text(v + N * 0.02, i, f"{v} ({v / N:.0%})", va="center", fontsize=10.5, color=TEKST_2)
+        ax.text(v + N * 0.02, i, f"{v} ({proc(v / N)})", va="center", fontsize=10.5, color=TEKST_2)
     ax.set_xticks([])
     for s in ("top", "right", "bottom"):
         ax.spines[s].set_visible(False)
@@ -74,9 +80,9 @@ def licz(kol, kolejnosc):
 
 
 # 1. Profil respondentów
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.6, 2.4))
-wiek = ["Poniżej 18", "18–24", "25–34", "45 i więcej"]
-poziomy(a1, ["Poniżej 18", "18-24", "25-34", "45 i więcej"], licz("wiek", wiek), "Wiek")
+fig, (a1, a2) = plt.subplots(1, 2, figsize=(6.6, 2.6))
+wiek = ["Poniżej 18", "18–24", "25–34", "35–44", "45 i więcej"]
+poziomy(a1, ["Poniżej 18", "18-24", "25-34", "35-44", "45 i więcej"], licz("wiek", wiek), "Wiek")
 zaj = ["Praca na etacie", "Nauka lub studia", "Freelance lub własna firma"]
 poziomy(a2, ["Praca na etacie", "Nauka lub studia", "Freelance, własna firma"], licz("zajecie", zaj), "Czym się zajmują")
 fig.subplots_adjust(wspace=0.75)
@@ -162,7 +168,7 @@ def grupowy(nazwa, etykiety, wartosci_dla, wysokosc):
             y = i + (g - 0.5) * (h + 0.04)
             if v:
                 ax.barh(y, v / n, height=h, color=kolor, edgecolor="none")
-            ax.text(v / n + 0.015, y, f"{v / n:.0%} ({v} z {n})", va="center", fontsize=9.5, color=TEKST_2)
+            ax.text(v / n + 0.015, y, f"{proc(v / n)} ({v} z {n})", va="center", fontsize=9.5, color=TEKST_2)
     ax.set_xlim(0, 1.32)
     ax.set_ylim(k - 0.4, -0.75)
     ax.set_yticks(range(k))
@@ -188,5 +194,13 @@ syt = list(wielokrotny("sytuacje").index)
 grupowy("9_sytuacje_grupy.png", syt, wiele("sytuacje", syt), 3.0)
 grupowy("10_cena_grupy.png", ["Do 200 zł", "201-400 zł", "401-700 zł", "Powyżej 700 zł"],
         lambda d: [int((d.cena == k).sum()) for k in cena], 2.6)
+
+# 11. Segmenty: czas dziennie (do godziny / dłużej) x budżet (do 400 zł / ponad 400 zł)
+dlugo = df.czas != "Do godziny"
+drogo = df.cena.isin(["401-700 zł", "Powyżej 700 zł"])
+seg = [int((dlugo & drogo).sum()), int((dlugo & ~drogo).sum()), int((~dlugo & drogo).sum()), int((~dlugo & ~drogo).sum())]
+fig, ax = plt.subplots(figsize=(6.0, 2.0))
+poziomy(ax, ["A Entuzjaści dźwięku", "B Praktyczni pracujący", "C Wierni marce", "D Okazjonalni oszczędni"], seg)
+zapisz(fig, "11_segmenty.png")
 
 print("Zapisano wykresy w", WYK)

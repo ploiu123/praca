@@ -23,12 +23,15 @@ NIEBIESKI, POMARANCZ = "4472C4", "ED7D31"
 
 df = pd.read_csv(KAT / "odpowiedzi.csv")
 df.columns = ["ts", "wiek", "zajecie", "czas", "sytuacje", "wazne", "cena", "styl", "marka", "gdzie", "brak"]
+WSZYSTKIE = len(df)
+# te same odpowiedzi wysłane kilka razy pod rząd liczymy jako jedną
+df = df.drop_duplicates(subset=df.columns[1:], keep="first").reset_index(drop=True)
 N = len(df)
 OST = N + 1  # ostatni wiersz danych w arkuszu Odpowiedzi
 
 # kolumny w arkuszu Odpowiedzi
 KOL = {"nr": "A", "data": "B", "wiek": "C", "zajecie": "D", "grupa": "E", "czas": "F", "sytuacje": "G",
-       "wazne": "H", "cena": "I", "styl": "J", "marka": "K", "gdzie": "L", "brak": "M"}
+       "wazne": "H", "cena": "I", "styl": "J", "marka": "K", "gdzie": "L", "brak": "M", "segment": "N"}
 
 
 def zakres(kol):
@@ -47,10 +50,16 @@ def kategorie_uwagi(tekst):
         kat.append("Lepsze wyciszenie otoczenia")
     if "bateri" in t:
         kat.append("Lepsza bateria")
-    if "uciska" in t:
-        kat.append("Słuchawki za bardzo uciskają głowę")
+    if "uciska" in t or "docisk" in t or "dopasowa" in t or "wygod" in t:
+        kat.append("Wygoda i dopasowanie")
     if "dźwięk" in t or "dzwięk" in t:
         kat.append("Lepsza jakość dźwięku")
+    if "wygląd" in t or "design" in t:
+        kat.append("Lepszy wygląd")
+    if "mikrofon" in t:
+        kat.append("Lepszy mikrofon")
+    if "przełącz" in t:
+        kat.append("Łatwe przełączanie między urządzeniami")
     if "złoż" in t:
         kat.append("Możliwość złożenia słuchawek")
     if "ładowa" in t:
@@ -114,22 +123,24 @@ ws = wb.active
 ws.title = "Odpowiedzi"
 naglowki = ["Nr", "Data", "Wiek", "Zajęcie", "Grupa", "Czas dziennie w słuchawkach", "Sytuacje",
             "Najważniejsze cechy", "Maksymalny budżet", "Styl (1-5)", "Zaufanie do marki (1-5)",
-            "Gdzie kupuje", "Czego brakuje"]
+            "Gdzie kupuje", "Czego brakuje", "Segment"]
 ws.append(naglowki)
 for i, r in enumerate(df.itertuples(index=False), 2):
     data = datetime.strptime(r.ts.replace(" CET", ""), "%Y/%m/%d %I:%M:%S %p")
     ws.append([i - 1, data, r.wiek, r.zajecie, f'=IF(D{i}="Nauka lub studia","Studenci","Pracujący")', r.czas,
                r.sytuacje.replace(";", "; "), r.wazne.replace(";", "; "), r.cena, int(r.styl), int(r.marka),
-               r.gdzie, r.brak if isinstance(r.brak, str) else ""])
+               r.gdzie, r.brak if isinstance(r.brak, str) else "",
+               f'=IF(F{i}="Do godziny",IF(OR(I{i}="401-700 zł",I{i}="Powyżej 700 zł"),"C","D"),'
+               f'IF(OR(I{i}="401-700 zł",I{i}="Powyżej 700 zł"),"A","B"))'])
     ws.cell(row=i, column=2).number_format = "dd.mm.yyyy hh:mm"
 styl_tabeli(ws, 1, OST, 1, len(naglowki))
 for wiersz in ws.iter_rows(min_row=2, max_row=OST):
     for c in wiersz:
         c.alignment = Alignment(wrap_text=True, vertical="top")
-for kol, szer in zip("ABCDEFGHIJKLM", (5, 16, 11, 22, 11, 16, 30, 38, 14, 9, 11, 26, 45)):
+for kol, szer in zip("ABCDEFGHIJKLMN", (5, 16, 11, 22, 11, 16, 30, 38, 14, 9, 11, 26, 45, 10)):
     ws.column_dimensions[kol].width = szer
 ws.row_dimensions[1].height = 32
-ws.auto_filter.ref = f"A1:M{OST}"
+ws.auto_filter.ref = f"A1:N{OST}"
 ws.freeze_panes = "A2"
 
 # --- Tabele -----------------------------------------------------------------------
@@ -140,6 +151,9 @@ wt["A2"] = "Liczba respondentów"
 wt["B2"] = f"=COUNTA(Odpowiedzi!$A$2:$A${OST})"
 wt["A2"].font = Font(bold=True)
 wt["B2"].font = Font(bold=True)
+wt["A3"] = (f"Formularz wysłano {WSZYSTKIE} razy. {WSZYSTKIE - N} zgłoszeń to powtórzenia tej samej odpowiedzi "
+            "(9.11, w ciągu 30 sekund), więc policzyliśmy ją raz.")
+wt["A3"].font = Font(italic=True, size=9, color="595959")
 NR = "Tabele!$B$2"
 wt.column_dimensions["A"].width = 34
 wt.column_dimensions["B"].width = 13
@@ -301,8 +315,9 @@ r += 1
 r_nagl = r
 wu.cell(row=r, column=2, value="Kategoria")
 wu.cell(row=r, column=3, value="Liczba osób")
-kategorie = ["Niczego nie brakuje", "Lepsze wyciszenie otoczenia", "Lepsza bateria", "Słuchawki za bardzo uciskają głowę",
-             "Lepsza jakość dźwięku", "Możliwość złożenia słuchawek", "Brak komunikatu głosowego o ładowaniu"]
+kategorie = ["Niczego nie brakuje", "Lepsze wyciszenie otoczenia", "Wygoda i dopasowanie", "Lepsza bateria",
+             "Lepsza jakość dźwięku", "Lepszy wygląd", "Lepszy mikrofon", "Łatwe przełączanie między urządzeniami",
+             "Możliwość złożenia słuchawek", "Brak komunikatu głosowego o ładowaniu"]
 for k in kategorie:
     r += 1
     wu.cell(row=r, column=2, value=k)
@@ -312,6 +327,86 @@ wu.cell(row=r, column=2, value="Brak odpowiedzi")
 wu.cell(row=r, column=3, value=f"={NR}-COUNTA($B${r0 + 1}:$B${r1})")
 styl_tabeli(wu, r_nagl, r, 2, 3)
 wu.cell(row=r + 1, column=2, value="Jedna osoba mogła podać dwie uwagi, dlatego suma może być większa niż liczba respondentów.").font = Font(italic=True, size=9, color="595959")
+
+# --- Segmenty ----------------------------------------------------------------------
+wsg = wb.create_sheet("Segmenty")
+wsg["A1"] = "Segmentacja respondentów"
+wsg["A1"].font = Font(bold=True, size=14)
+wsg["A2"] = ("Dwa kryteria: czas dziennie w słuchawkach (do godziny albo dłużej) i maksymalny budżet "
+             "(do 400 zł albo ponad 400 zł). Segment każdej osoby jest w kolumnie N arkusza Odpowiedzi.")
+wsg["A2"].font = Font(italic=True, size=9, color="595959")
+for kol, szer in zip("ABCDE", (34, 16, 16, 16, 16)):
+    wsg.column_dimensions[kol].width = szer
+
+SEGMENTY = [("A", "A Entuzjaści dźwięku", "ponad godzinę", "ponad 400 zł"),
+            ("B", "B Praktyczni pracujący", "ponad godzinę", "do 400 zł"),
+            ("C", "C Wierni marce", "do godziny", "ponad 400 zł"),
+            ("D", "D Okazjonalni oszczędni", "do godziny", "do 400 zł")]
+r = 4
+wsg.cell(row=r, column=1, value="Liczebność segmentów").font = Font(bold=True, size=12)
+r += 1
+r_nagl = r
+for c, v in enumerate(["Segment", "Czas dziennie", "Budżet", "Liczba osób", "% respondentów"], 1):
+    wsg.cell(row=r, column=c, value=v)
+for lit, nazwa, czas_, budzet in SEGMENTY:
+    r += 1
+    wsg.cell(row=r, column=1, value=nazwa)
+    wsg.cell(row=r, column=2, value=czas_)
+    wsg.cell(row=r, column=3, value=budzet)
+    wsg.cell(row=r, column=4, value=f'=COUNTIF({zakres("segment")},"{lit}")')
+    wsg.cell(row=r, column=5, value=f"=D{r}/{NR}").number_format = "0%"
+r_kon = r
+r += 1
+wsg.cell(row=r, column=1, value="Razem").font = Font(bold=True)
+wsg.cell(row=r, column=4, value=f"=SUM(D{r_nagl + 1}:D{r_kon})").font = Font(bold=True)
+wsg.cell(row=r, column=5, value=f"=SUM(E{r_nagl + 1}:E{r_kon})").number_format = "0%"
+styl_tabeli(wsg, r_nagl, r, 1, 5)
+wykres(wsg, "Liczebność segmentów", r_nagl, r_kon, [4], "G4", wysokosc=6.5)
+
+r += 10
+wsg.cell(row=r, column=1, value="Profile segmentów (% osób w segmencie)").font = Font(bold=True, size=12)
+r += 1
+r_nagl = r
+for c, (lit, nazwa, _, _) in enumerate(SEGMENTY, 2):
+    wsg.cell(row=r, column=c, value=nazwa)
+wsg.cell(row=r, column=1, value="Cecha")
+wsg.row_dimensions[r].height = 32
+r += 1
+wsg.cell(row=r, column=1, value="Liczba osób")
+for c, (lit, *_) in enumerate(SEGMENTY, 2):
+    wsg.cell(row=r, column=c, value=f'=COUNTIF({zakres("segment")},"{lit}")')
+r_n = r
+PROFIL = [
+    ("Studenci (nauka lub studia)", "zajecie", '"Nauka lub studia"'),
+    ("Pracujący (etat, freelance, firma)", "grupa", '"Pracujący"'),
+    ("Ponad 3 godziny dziennie", "czas", '"Powyżej 3 godzin"'),
+    ("Budżet powyżej 700 zł", "cena", '"Powyżej 700 zł"'),
+    ("Ważne: wygoda noszenia", "wazne", '"*Wygoda noszenia*"'),
+    ("Ważne: jakość dźwięku i bas", "wazne", '"*Jakość dźwięku*"'),
+    ("Ważne: wyciszenie (ANC)", "wazne", '"*Wyciszenie*"'),
+    ("Ważne: mocna bateria", "wazne", '"*bateria*"'),
+    ("Ważne: cena i promocje", "wazne", '"*cena*"'),
+    ("Używa podczas grania", "sytuacje", '"*grania*"'),
+    ("Używa w pracy lub podczas nauki", "sytuacje", '"*W pracy*"'),
+    ("Kupuje w sklepie stacjonarnym", "gdzie", '"W sklepie stacjonarnym"'),
+    ("Kupuje przez internet", "gdzie", '"<>W sklepie stacjonarnym"'),
+]
+for opis, kol, kryt in PROFIL:
+    r += 1
+    wsg.cell(row=r, column=1, value=opis)
+    for c, (lit, *_) in enumerate(SEGMENTY, 2):
+        kl = "BCDE"[c - 2]
+        wsg.cell(row=r, column=c, value=f'=COUNTIFS({zakres("segment")},"{lit}",{zakres(kol)},{kryt})/{kl}${r_n}').number_format = "0%"
+for opis, kol in (("Średnia: słuchawki jako styl (1-5)", "styl"), ("Średnia: zaufanie do marki (1-5)", "marka")):
+    r += 1
+    wsg.cell(row=r, column=1, value=opis)
+    for c, (lit, *_) in enumerate(SEGMENTY, 2):
+        wsg.cell(row=r, column=c, value=f'=AVERAGEIFS({zakres(kol)},{zakres("segment")},"{lit}")').number_format = "0.0"
+styl_tabeli(wsg, r_nagl, r, 1, 5)
+for c in range(2, 6):
+    wsg.cell(row=r_nagl, column=c).alignment = Alignment(wrap_text=True, vertical="center", horizontal="center")
+r += 2
+wsg.cell(row=r, column=1, value="Segment docelowy: A Entuzjaści dźwięku (największa grupa, długie używanie i najwyższy budżet).").font = Font(bold=True)
 
 wb.save(XLSX)
 print("Zapisano", XLSX)

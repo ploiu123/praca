@@ -36,7 +36,12 @@ function czytajCsv(plik) {
   if (pole !== "" || wiersz.length) { wiersz.push(pole); wiersze.push(wiersz); }
   return wiersze.slice(1);
 }
-const odp = czytajCsv(path.join(KAT, "odpowiedzi.csv"));
+const surowe = czytajCsv(path.join(KAT, "odpowiedzi.csv"));
+const wszystkie = surowe.length;
+// te same odpowiedzi wysłane kilka razy pod rząd liczymy jako jedną
+const widziane = new Set();
+const odp = surowe.filter((r) => { const k = r.slice(1).join("|"); if (widziane.has(k)) return false; widziane.add(k); return true; });
+const powtorzone = wszystkie - odp.length;
 
 // --- klocki --------------------------------------------------------------------
 const t = (text, o = {}) => new TextRun({ text, font: FONT, ...o });
@@ -94,77 +99,83 @@ const tresc = [
 
   h1("Wstęp"),
   p("Celem ankiety było sprawdzenie, jak respondenci korzystają ze słuchawek bezprzewodowych, na co zwracają uwagę przy ich wyborze, ile są w stanie na nie wydać i gdzie je kupują. Zapytaliśmy też, czego brakuje im w słuchawkach, których używają obecnie."),
-  p("Ankieta była prowadzona przez internet (Formularze Google) od 30 października do 6 listopada 2026 r. Wypełniło ją 15 osób. Składała się z 10 pytań, w tym jednego otwartego. Ze względu na małą liczbę odpowiedzi wyniki trzeba traktować orientacyjnie. W pytaniach, w których można było zaznaczyć kilka odpowiedzi, procenty nie sumują się do 100%. W kilku przypadkach respondenci zaznaczyli więcej lub mniej odpowiedzi, niż było w poleceniu, ale uwzględniliśmy wszystkie wskazania."),
+  p(`Ankieta była prowadzona przez internet (Formularze Google) od 30 października do 9 listopada 2026 r. Formularz wysłano ${wszystkie} razy, ale ${powtorzone + 1} zgłoszeń z 9 listopada było identycznych i przyszło w ciągu niecałych 30 sekund. Uznaliśmy, że to jedna osoba, która wysłała formularz kilka razy, dlatego tę odpowiedź policzyliśmy tylko raz. Do analizy wzięliśmy ${odp.length} odpowiedzi.`),
+  p("Ankieta składała się z 10 pytań, w tym jednego otwartego. Próba nie jest duża, więc wyniki trzeba traktować orientacyjnie. W pytaniach, w których można było zaznaczyć kilka odpowiedzi, procenty nie sumują się do 100%. Część osób zaznaczyła więcej lub mniej odpowiedzi, niż było w poleceniu, ale uwzględniliśmy wszystkie wskazania."),
 
   h1("1. Charakterystyka respondentów"),
-  p("W ankiecie wzięły udział głównie młode osoby. Ponad połowa (8 osób) ma 18-24 lata, 5 osób ma 25-34 lata, a po jednej osobie ma mniej niż 18 lat oraz 45 lat lub więcej. Pracujących na etacie i uczących się lub studiujących jest tyle samo, po 7 osób, a jedna osoba prowadzi własną firmę lub pracuje jako freelancer. Wśród osób w wieku 18-24 lata przeważają studenci (5 z 8), a w grupie 25-34 lata osoby pracujące (4 z 5)."),
+  p("Większość respondentów to młode osoby. Najwięcej (10 osób) ma 18-24 lata, 8 osób ma 25-34 lata, a 5 osób ma mniej niż 18 lat. Starszych respondentów jest niewielu: po 2 osoby w wieku 35-44 lata oraz 45 lat i więcej. Pracujących na etacie i uczących się lub studiujących jest tyle samo, po 11 osób, a 5 osób prowadzi własną firmę lub pracuje jako freelancer. Wszystkie osoby poniżej 18 lat się uczą, w grupie 18-24 lata studentów i pracujących jest po równo (po 5), a wśród osób od 25 lat w górę przeważają pracujący (11 z 12)."),
   ...wykres("1_profil.png", "Wiek i zajęcie respondentów"),
 
   h1("2. Korzystanie ze słuchawek"),
-  p("Po 6 osób używa słuchawek do godziny dziennie albo ponad 3 godziny dziennie, a 3 osoby korzystają z nich od 1 do 3 godzin. Widać więc podział na osoby, które zakładają słuchawki na chwilę, i takie, które mają je na uszach przez dużą część dnia."),
+  p("Prawie połowa respondentów (13 osób) używa słuchawek ponad 3 godziny dziennie. 8 osób zakłada je najwyżej na godzinę, a 6 osób używa ich od 1 do 3 godzin. Dla dużej części badanych słuchawki są więc sprzętem na cały dzień, a nie tylko na chwilę."),
   ...wykres("2_czas.png", "Czas spędzany dziennie w słuchawkach"),
-  p("W kolejnym pytaniu można było wybrać maksymalnie dwie sytuacje, w których respondenci najczęściej używają słuchawek. Najwięcej wskazań miało granie (8 osób, czyli ponad połowa). Na drugim miejscu jest korzystanie w drodze (6 osób), a po 5 osób wybrało pracę lub naukę, trening i relaks w domu. Słuchawki są więc używane w bardzo różnych sytuacjach, ale granie wyraźnie się wyróżnia."),
+  p("W kolejnym pytaniu można było wybrać maksymalnie dwie sytuacje, w których respondenci najczęściej używają słuchawek. Najwięcej wskazań miała praca lub nauka (14 osób, czyli ponad połowa), a na drugim miejscu jest granie (12 osób). Po 9 osób używa słuchawek na treningu i w domu dla relaksu, a 8 osób w drodze. Słuchawki są więc używane w bardzo różnych sytuacjach, ale najczęściej wtedy, gdy trzeba się skupić, i podczas grania."),
   ...wykres("3_sytuacje.png", "Sytuacje, w których respondenci używają słuchawek"),
 
   h1("3. Najważniejsze cechy słuchawek"),
-  p("W tym pytaniu należało wybrać trzy najważniejsze cechy. Zdecydowanie najczęściej wybierana była wygoda noszenia, którą wskazało 13 z 15 osób. Na drugim miejscu jest jakość dźwięku i mocny bas (11 osób), a dalej wyciszenie otoczenia ANC (8 osób) i mocna bateria (7 osób). Cena i promocje były ważne dla 4 osób, a wygląd i design tylko dla jednej."),
-  p("Można z tego wnioskować, że przy wyborze słuchawek liczą się przede wszystkim cechy, które odczuwa się podczas codziennego używania, a wygląd ma niewielkie znaczenie."),
+  p("W tym pytaniu należało wybrać trzy najważniejsze cechy. Najczęściej wybierana była wygoda noszenia, którą wskazało 20 z 27 osób (74%). Na drugim miejscu jest jakość dźwięku i mocny bas (18 osób). Wyciszenie otoczenia ANC wybrało 13 osób, a mocną baterię 12, czyli mniej więcej połowa badanych. Cena i promocje były ważne dla 10 osób, a wygląd i design tylko dla 2."),
+  p("Przy wyborze słuchawek liczą się więc przede wszystkim cechy, które odczuwa się podczas codziennego używania, a wygląd ma niewielkie znaczenie."),
   ...wykres("4_wazne.png", "Najważniejsze cechy przy wyborze słuchawek"),
 
   h1("4. Cena"),
-  p("Budżety respondentów są dość zróżnicowane. Najwięcej osób (5) jest gotowych wydać na nowe słuchawki od 401 do 700 zł, 4 osoby od 201 do 400 zł, a po 3 osoby do 200 zł i ponad 700 zł. Ponad połowa respondentów (8 z 15) zapłaciłaby więc za słuchawki więcej niż 400 zł."),
+  p("Najwięcej osób (11) jest gotowych wydać na nowe słuchawki od 401 do 700 zł. 6 osób wyda od 201 do 400 zł, a po 5 osób do 200 zł i ponad 700 zł. Ponad połowa respondentów (16 z 27) zapłaciłaby więc za słuchawki więcej niż 400 zł."),
   ...wykres("5_cena.png", "Maksymalna kwota, jaką respondenci wydadzą na nowe słuchawki"),
 
   h1("5. Styl i zaufanie do marki"),
   p("Dwa pytania dotyczyły stosunku do słuchawek i do marek. Odpowiadano w skali od 1 (zdecydowanie nie) do 5 (zdecydowanie tak)."),
-  p("Ze zdaniem, że słuchawki są ważnym elementem stylu, respondenci zgadzali się umiarkowanie. Średnia ocena wyniosła 3,3, a najczęściej wybierano odpowiedzi 3 i 4 (po 4 osoby). 7 osób zaznaczyło 4 lub 5, a 4 osoby 1 lub 2. Mimo to wygląd i design znalazł się wśród najważniejszych cech tylko u jednej osoby. Styl ma więc dla części osób znaczenie, ale przy samym wyborze słuchawek przegrywa z wygodą i dźwiękiem."),
-  p("W pytaniu o zaufanie do sprawdzonych marek, takich jak JBL, najwięcej osób (6) zaznaczyło 5, czyli zdecydowanie ufa takim markom. Z drugiej strony 4 osoby wybrały 2, a kolejne 4 odpowiedź środkową. Średnia wyniosła 3,6, a nikt nie zaznaczył odpowiedzi 1."),
+  p("Ze zdaniem, że słuchawki są ważnym elementem stylu, respondenci zgadzali się umiarkowanie. Średnia ocena wyniosła 3,3, a najczęściej wybierano odpowiedź środkową, czyli 3 (9 osób). 12 osób zaznaczyło 4 lub 5, a 6 osób 1 lub 2. Mimo to wygląd i design znalazł się wśród najważniejszych cech tylko u 2 osób. Styl ma więc dla części osób znaczenie, ale przy samym wyborze słuchawek przegrywa z wygodą i dźwiękiem."),
+  p("Zaufanie do sprawdzonych marek, takich jak JBL, jest wyższe. Średnia wyniosła 3,7, a 15 osób zaznaczyło 4 lub 5. Najczęściej wybierano odpowiedzi 3 i 5 (po 8 osób). Nikt nie zaznaczył odpowiedzi 1, a odpowiedź 2 wybrały 4 osoby."),
   ...wykres("6_skale.png", "Odpowiedzi na pytania o styl i zaufanie do marki"),
 
   h1("6. Miejsce zakupu"),
-  p("Najwięcej respondentów (5 osób) kupuje słuchawki w internetowych sklepach pośredników. Po 4 osoby kupują w sklepie stacjonarnym i na stronie producenta, a 2 osoby na platformach typu Allegro czy Amazon. Łącznie 11 z 15 osób robi takie zakupy przez internet, ale sklep stacjonarny też ma swoich zwolenników."),
+  p("Najwięcej respondentów (12 osób) kupuje słuchawki w sklepie stacjonarnym. 7 osób kupuje w internetowych sklepach pośredników, a po 4 osoby na stronie producenta i na platformach typu Allegro czy Amazon. Łącznie przez internet kupuje 15 z 27 osób, ale to sklep stacjonarny jest najczęściej wybieranym pojedynczym miejscem. Możliwe, że wiele osób chce przed zakupem przymierzyć słuchawki i ich posłuchać."),
   ...wykres("7_gdzie.png", "Miejsce zakupu słuchawek"),
 
   h1("7. Uwagi respondentów"),
-  p("Ostatnie pytanie było otwarte i dotyczyło tego, czego brakuje respondentom w słuchawkach, których obecnie używają. Odpowiedziało na nie 11 osób. Najczęściej pisano, że niczego nie brakuje (4 osoby), a jedna z tych osób dodała, że używa słuchawek JBL, które są wygodne i dobrze wyciszają otoczenie. Wśród uwag najczęściej powtarzało się lepsze wyciszenie otoczenia (3 osoby). Pozostałe uwagi pojawiły się po jednym razie: lepsza bateria, słuchawki za bardzo uciskają głowę, brakuje dobrej jakości dźwięku i możliwości złożenia słuchawek, a jedna osoba chciałaby, żeby w trakcie muzyki nie pojawiał się komunikat głosowy o potrzebie ładowania. Jedna osoba podała dwie uwagi, dlatego liczby w tabeli nie sumują się do 15."),
+  p("Ostatnie pytanie było otwarte i dotyczyło tego, czego brakuje respondentom w słuchawkach, których obecnie używają. Odpowiedziała na nie 21 osób. 4 osoby napisały, że niczego im nie brakuje, a jedna z nich dodała, że używa słuchawek JBL, które są wygodne i dobrze wyciszają otoczenie."),
+  p("Najczęściej powtarzały się dwie uwagi: lepsze wyciszenie otoczenia (4 osoby) oraz wygoda i dopasowanie (4 osoby). W tej drugiej grupie respondenci pisali, że słuchawki za mocno uciskają głowę, że nauszniki z czasem się rozciągają i przydałaby się regulacja docisku albo że słuchawki źle pasują do kształtu ucha. Po 2 osoby chciałyby lepszej baterii, lepszego dźwięku i ładniejszego wyglądu. Pojedyncze osoby wspomniały o mikrofonie, łatwym przełączaniu między urządzeniami, możliwości złożenia słuchawek i o komunikacie głosowym o ładowaniu, który przerywa muzykę. Jedna osoba podała dwie uwagi, dlatego liczby w tabeli nie sumują się do 27."),
   ...tabela("Czego brakuje respondentom w obecnych słuchawkach", ["Uwaga", "Liczba osób"], [
     ["Niczego nie brakuje", "4"],
-    ["Lepsze wyciszenie otoczenia", "3"],
-    ["Lepsza bateria", "1"],
-    ["Słuchawki za bardzo uciskają głowę", "1"],
-    ["Lepsza jakość dźwięku", "1"],
+    ["Lepsze wyciszenie otoczenia", "4"],
+    ["Wygoda i dopasowanie (ucisk, docisk, kształt ucha)", "4"],
+    ["Lepsza bateria", "2"],
+    ["Lepsza jakość dźwięku", "2"],
+    ["Lepszy wygląd", "2"],
+    ["Lepszy mikrofon", "1"],
+    ["Łatwe przełączanie między urządzeniami", "1"],
     ["Możliwość złożenia słuchawek", "1"],
     ["Brak komunikatu głosowego o ładowaniu w trakcie muzyki", "1"],
-    ["Brak odpowiedzi", "4"],
+    ["Brak odpowiedzi", "6"],
   ], [7226, 1800]),
 
   h1("8. Porównanie studentów i osób pracujących"),
-  p("Porównaliśmy odpowiedzi osób uczących się lub studiujących (7 osób) i osób pracujących (8 osób, w tym jedna osoba prowadząca własną firmę lub pracująca jako freelancer). Na wykresach podano odsetek osób w danej grupie."),
-  p("Dla obu grup najważniejsza jest wygoda (6 z 7 studentów i 7 z 8 pracujących). Studenci równie często wybierali jakość dźwięku (6 z 7) i częściej zwracali uwagę na cenę i promocje (3 z 7, a wśród pracujących 1 z 8). Pracujący częściej wskazywali mocną baterię (5 z 8, a wśród studentów 2 z 7)."),
+  p("Porównaliśmy odpowiedzi osób uczących się lub studiujących (11 osób) i osób pracujących (16 osób: 11 pracuje na etacie, a 5 prowadzi własną firmę lub pracuje jako freelancer). Na wykresach podano odsetek osób w danej grupie."),
+  p("Studentom najbardziej zależy na jakości dźwięku (8 z 11), a pracującym na wygodzie (13 z 16). Studenci częściej zwracali uwagę na cenę i promocje (5 z 11, a wśród pracujących 5 z 16) oraz na wyciszenie otoczenia (6 z 11 wobec 7 z 16). Wygląd wybrały tylko 2 osoby pracujące i żaden student."),
   ...wykres("8_wazne_grupy.png", "Najważniejsze cechy słuchawek w obu grupach"),
-  p("Studenci zdecydowanie najczęściej korzystają ze słuchawek podczas grania (5 z 7). Pracujący używają ich głównie w pracy lub podczas nauki i w domu dla relaksu (po 4 z 8)."),
+  p("Studenci zdecydowanie najczęściej korzystają ze słuchawek podczas grania (8 z 11). Pracujący używają ich głównie w pracy (10 z 16) i w domu dla relaksu (7 z 16)."),
   ...wykres("9_sytuacje_grupy.png", "Sytuacje, w których obie grupy używają słuchawek"),
-  p("Ciekawie wygląda porównanie budżetów. Wszystkie 3 osoby, które wydałyby na słuchawki ponad 700 zł, uczą się lub studiują. Wśród pracujących nikt nie wybrał tej odpowiedzi, za to połowa z nich (4 z 8) wydałaby od 401 do 700 zł."),
+  p("Budżety studentów rozkładają się prawie równo: po 3 osoby wybrały do 200 zł, 401-700 zł i ponad 700 zł. Wśród pracujących wyraźnie przeważa przedział 401-700 zł, który wybrała połowa z nich (8 z 16). Ciekawe jest to, że ponad 700 zł częściej deklarowali studenci (3 z 11) niż pracujący (2 z 16)."),
   ...wykres("10_cena_grupy.png", "Maksymalna kwota na słuchawki w obu grupach"),
-  p("Największa różnica dotyczy zaufania do sprawdzonych marek. Pracujący ocenili je średnio na 4,0, a studenci na 3,1. W ocenie słuchawek jako elementu stylu obie grupy wypadły tak samo (średnio 3,3)."),
-  ...tabela("Porównanie studentów i osób pracujących", ["", "Studenci (7 osób)", "Pracujący (8 osób)"], [
-    ["Najczęstsze użycie", "podczas grania (5)", "w pracy lub nauce i w domu dla relaksu (po 4)"],
-    ["Najważniejsze cechy", "wygoda i jakość dźwięku (po 6)", "wygoda (7), jakość dźwięku i bateria (po 5)"],
-    ["Najczęstszy budżet", "powyżej 700 zł (3)", "401-700 zł (4)"],
-    ["Gdzie najczęściej kupują", "sklep stacjonarny (3)", "sklepy internetowe i strona producenta (po 3)"],
-    ["Słuchawki jako element stylu (średnia)", "3,3", "3,3"],
-    ["Zaufanie do sprawdzonych marek (średnia)", "3,1", "4,0"],
+  p("Pracujący bardziej ufają sprawdzonym markom: ich średnia ocena wyniosła 3,9, a studentów 3,5. W ocenie słuchawek jako elementu stylu wyniki są podobne (3,5 u studentów i 3,3 u pracujących)."),
+  ...tabela("Porównanie studentów i osób pracujących", ["", "Studenci (11 osób)", "Pracujący (16 osób)"], [
+    ["Ponad 3 godziny dziennie w słuchawkach", "6 osób", "7 osób"],
+    ["Najczęstsze użycie", "podczas grania (8)", "w pracy lub nauce (10)"],
+    ["Najważniejsze cechy", "jakość dźwięku (8), wygoda (7)", "wygoda (13), jakość dźwięku (10)"],
+    ["Najczęstszy budżet", "do 200 zł, 401-700 zł i ponad 700 zł (po 3)", "401-700 zł (8)"],
+    ["Gdzie najczęściej kupują", "sklep stacjonarny (6)", "sklep stacjonarny (6), sklepy internetowe (5)"],
+    ["Słuchawki jako element stylu (średnia)", "3,5", "3,3"],
+    ["Zaufanie do sprawdzonych marek (średnia)", "3,5", "3,9"],
   ], [2826, 3100, 3100]),
 
   h1("9. Podsumowanie i wnioski"),
-  p("Ankieta pokazuje, że przy wyborze słuchawek najważniejsza jest dla respondentów wygoda, a zaraz po niej jakość dźwięku. Wyciszenie otoczenia i bateria są ważne dla mniej więcej połowy osób, a wygląd prawie się nie liczy, chociaż część osób traktuje słuchawki jako element swojego stylu. Budżety są zróżnicowane, ale ponad połowa respondentów jest gotowa zapłacić więcej niż 400 zł. Większość osób (11 z 15) kupuje słuchawki przez internet."),
-  p("Sprawdzonym markom, takim jak JBL, ufa mniej więcej połowa respondentów, a bardziej ufają im osoby pracujące. Studenci częściej używają słuchawek do grania i bardziej zwracają uwagę na dźwięk i cenę, a jednocześnie to wśród nich są osoby gotowe wydać na słuchawki najwięcej."),
+  p("Ankieta pokazuje, że przy wyborze słuchawek najważniejsza jest dla respondentów wygoda, a zaraz po niej jakość dźwięku. Wyciszenie otoczenia i bateria są ważne dla mniej więcej połowy osób, a wygląd prawie się nie liczy, chociaż część osób traktuje słuchawki jako element swojego stylu. Prawie połowa badanych używa słuchawek ponad 3 godziny dziennie, a ponad połowa jest gotowa zapłacić za nie więcej niż 400 zł. Najczęściej wybieranym miejscem zakupu jest sklep stacjonarny, chociaż w sumie więcej osób kupuje przez internet."),
+  p("Sprawdzonym markom, takim jak JBL, ufa ponad połowa respondentów, a bardziej ufają im osoby pracujące. Studenci częściej używają słuchawek do grania i bardziej zwracają uwagę na dźwięk i cenę, a pracujący szukają przede wszystkim wygody na wiele godzin pracy."),
   p("Na podstawie wyników firma mogłaby:"),
   li("w reklamach mocniej podkreślać wygodę noszenia i jakość dźwięku,"),
-  li("oferować wyciszenie otoczenia (ANC) zarówno w tańszych, jak i w droższych modelach,"),
-  li("prowadzić sprzedaż głównie przez internet, ale nie rezygnować ze sklepów stacjonarnych,"),
+  li("pokazywać, że słuchawki są wygodne przez wiele godzin, np. dzięki regulacji docisku i dobremu dopasowaniu do ucha,"),
+  li("dać klientom możliwość przetestowania słuchawek w sklepach stacjonarnych, a jednocześnie rozwijać sprzedaż przez internet,"),
   li("przygotować ofertę dla studentów i graczy, np. modele z dobrym dźwiękiem i promocje,"),
-  li("dodać możliwość wyłączenia komunikatów głosowych i pomyśleć o składanej konstrukcji."),
+  li("dodać możliwość wyłączenia komunikatów głosowych i łatwe przełączanie między urządzeniami."),
 ];
 
 const skroc = (s) => s
